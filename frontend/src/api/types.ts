@@ -17,3 +17,50 @@ export interface SystemStatusResponse {
   status: string;
   components: ComponentStatus[];
 }
+
+export interface InterfaceInfo {
+  index: number;
+  name: string;
+  description: string | null;
+  loopback: boolean;
+}
+
+export interface ProtocolStat {
+  protocol: string;
+  frames: number;
+  bytes: number;
+}
+
+export interface CaptureStats {
+  packet_count: number;
+  byte_count: number;
+  protocols: ProtocolStat[];
+  top_talkers: Array<Record<string, unknown>>;
+  time_series: Array<{ t: number; frames: number; bytes: number }>;
+  captures_count: number;
+}
+
+export interface CaptureRead {
+  id: string;
+  name: string;
+  source: string;
+  filename: string | null;
+  file_path: string | null;
+  interface: string | null;
+  filter_expr: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  duration_sec: number | null;
+  packet_count: number;
+  byte_count: number;
+  status: string;
+  error: string | null;
+  created_at: string;
+}
+
+export interface CaptureCreate {
+  name?: string;
+  interface_index: number;
+  filter_expr?: string;
+  duration_sec?: number;
+}

@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import { SimulationPage } from "@/pages/SimulationPage";
+import { CapturePage } from "@/pages/CapturePage";
 import { PacketsPage } from "@/pages/PacketsPage";
 import { ZeekPage } from "@/pages/ZeekPage";
 import { ComparePage } from "@/pages/ComparePage";
@@ -16,6 +17,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/simulation" element={<SimulationPage />} />
+          <Route path="/capture" element={<CapturePage />} />
           <Route path="/packets" element={<PacketsPage />} />
           <Route path="/zeek" element={<ZeekPage />} />
           <Route path="/compare" element={<ComparePage />} />

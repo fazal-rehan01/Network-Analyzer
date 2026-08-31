@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 const NAV = [
   { to: "/", label: "Dashboard", icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5z" },
   { to: "/simulation", label: "Simulation", icon: "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" },
+  { to: "/capture", label: "Capture", icon: "M21 12.79A9 9 0 1111.21 3 7 7 0 002 12v9a7 7 0 007 7h1c1.66 0 3.16-.66 4.24-1.72l1.62 1.62a.5.5 0 00.72-.7l-1.63-1.62A8.98 8.98 0 0021 12.8z" },
   { to: "/packets", label: "Packets", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" },
   { to: "/zeek", label: "Zeek", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
   { to: "/compare", label: "Compare", icon: "M11 4H4v11h7V4zM20 9h-7v6h7V9zM11 17H4v3h7v-3zM20 17h-7v3h7v-3z" },
