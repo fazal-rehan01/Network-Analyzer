@@ -1,0 +1,67 @@
+# ---- Environment / secrets ----
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.pfx
+*.p12
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+*.egg
+build/
+dist/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.log
+pip-wheel-metadata/
+
+# ---- Node / frontend ----
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+.vite/
+.eslintcache
+npm-debug.log*
+
+# ---- IDE / OS ----
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- Runtime storage (large generated files) ----
+# Never commit generated PCAPs unless intentionally included as small demo assets
+backend/storage/pcaps/*
+!backend/storage/pcaps/.gitkeep
+backend/storage/reports/*
+!backend/storage/reports/.gitkeep
+backend/storage/uploads/*
+!backend/storage/uploads/.gitkeep
+# Zeek generated logs
+backend/storage/zeek/*
+!backend/storage/zeek/.gitkeep
+
+# ---- Docker / compose local overrides ----
+docker-compose.override.yml
+
+# ---- Data ----
+*.db
+*.sqlite3
+*.sqlite
+
+# ---- Test artifacts ----
+coverage.xml
+junit.xml
