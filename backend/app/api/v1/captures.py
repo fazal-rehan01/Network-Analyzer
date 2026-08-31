@@ -1,15 +1,18 @@
 """Packet capture endpoints (live capture driven by TShark)."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.database import get_db
 from app.models.capture import Capture
 from app.schemas.capture import CaptureCreate, CaptureRead, CaptureStats, InterfaceInfo
 from app.services import capture as cap_svc
+from app.utils.timeutil import utcnow
+import uuid
 
 router = APIRouter(prefix="/captures", tags=["captures"])
 
@@ -91,6 +94,48 @@ def stop_capture(capture_id: str, db: Session = Depends(get_db)) -> CaptureRead:
     if cap.status == "running":
         cap_svc.stop_live_capture(capture_id)
         db.refresh(cap)
+    return _to_read(cap)
+
+
+@router.post("/upload", response_model=CaptureRead, status_code=201)
+async def upload_capture(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+) -> CaptureRead:
+    if not file.filename or not file.filename.lower().endswith((".pcap", ".pcapng", ".cap")):
+        raise HTTPException(status_code=400, detail="File must be a PCAP/PCAPNG capture")
+
+    settings = get_settings()
+    upload_dir = settings.upload_dir_abs
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    safe_name = f"upload-{uuid.uuid4().hex[:8]}-{file.filename}"
+    dest = upload_dir / safe_name
+
+    content = await file.read()
+    if len(content) > settings.max_upload_mb * 1024 * 1024:
+        raise HTTPException(status_code=413, detail=f"File exceeds {settings.max_upload_mb} MB limit")
+    dest.write_bytes(content)
+
+    stats = cap_svc.analyze_pcap(dest)
+
+    cap = Capture(
+        name=file.filename,
+        source="upload",
+        filename=file.filename,
+        file_path=str(dest),
+        interface=None,
+        filter_expr=None,
+        start_time=None,
+        end_time=None,
+        duration_sec=None,
+        packet_count=stats.packet_count,
+        byte_count=stats.byte_count,
+        status="done",
+    )
+    db.add(cap)
+    db.commit()
+    db.refresh(cap)
     return _to_read(cap)
 
 

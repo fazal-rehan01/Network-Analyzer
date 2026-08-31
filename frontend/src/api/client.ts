@@ -31,4 +31,9 @@ export const api = {
   captureStats: (id: string) => request<CaptureStats>(`/captures/${id}/stats`),
   captureStop: (id: string) => request<CaptureRead>(`/captures/${id}/stop`, { method: "POST" }),
   captureDelete: (id: string) => request<void>(`/captures/${id}`, { method: "DELETE" }),
+  captureUpload: (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request<CaptureRead>("/captures/upload", { method: "POST", body: form, headers: {} });
+  },
 };

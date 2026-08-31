@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { api } from "@/api/client";
 import { Badge, Card, EmptyState, ErrorState, Spinner } from "@/components/ui";
 import { useApi } from "@/hooks/useApi";
@@ -15,6 +15,8 @@ export function CapturePage() {
   });
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const handleStart = async () => {
     if (!newCapture.interface_index) {
@@ -31,6 +33,23 @@ export function CapturePage() {
       setStartError(e instanceof Error ? e.message : "Failed to start capture");
     } finally {
       setStarting(false);
+    }
+  };
+
+  const handleUpload = async (file: File) => {
+    if (!file.name.toLowerCase().endsWith(".pcap") && !file.name.toLowerCase().endsWith(".pcapng")) {
+      setUploadError("Only .pcap or .pcapng files allowed");
+      return;
+    }
+    setUploading(true);
+    setUploadError(null);
+    try {
+      await api.captureUpload(file);
+      captures.refetch();
+    } catch (e) {
+      setUploadError(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -134,6 +153,15 @@ export function CapturePage() {
         )}
       </Card>
 
+      <Card title="Upload PCAP" actions={
+        <span className="text-[11px] text-slate-500">Drag & drop or click to select .pcap / .pcapng</span>
+      }>
+        <div className="space-y-4">
+          <UploadZone onUpload={handleUpload} uploading={uploading} />
+          {uploadError && <div className="text-rose-300 text-sm">{uploadError}</div>}
+        </div>
+      </Card>
+
       <Card title="Captures">
         {captures.loading ? (
           <Spinner />
@@ -223,6 +251,63 @@ export function CapturePage() {
             <p>On Windows, ensure Npcap is installed (included in Wireshark installer) for loopback capture.</p>
           </div>
         </Card>
+      )}
+    </div>
+  );
+}
+
+function UploadZone({ onUpload, uploading }: { onUpload: (file: File) => void; uploading: boolean }) {
+  const [dragActive, setDragActive] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      onUpload(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleClick = () => inputRef.current?.click();
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) onUpload(e.target.files[0]);
+  };
+
+  return (
+    <div
+      onDragEnter={handleDrag}
+      onDragOver={handleDrag}
+      onDragLeave={handleDrag}
+      onDrop={handleDrop}
+      onClick={handleClick}
+      className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
+        dragActive ? "border-cyan-400 bg-cyan-500/5" : "border-slate-700 hover:border-slate-500"
+      } ${uploading ? "opacity-50 pointer-events-none" : ""}`}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".pcap,.pcapng"
+        className="absolute inset-0 opacity-0 cursor-pointer"
+        onChange={handleChange}
+      />
+      {uploading ? (
+        <Spinner label="Uploading & analyzing…" />
+      ) : (
+        <>
+          <svg className="w-12 h-12 mx-auto mb-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <p className="text-slate-300">Drop a PCAP file here, or click to browse</p>
+          <p className="text-xs text-slate-500 mt-1">.pcap or .pcapng files only</p>
+        </>
       )}
     </div>
   );
