@@ -1,10 +1,30 @@
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Layout } from "@/components/Layout";
+import Dashboard from "@/pages/Dashboard";
+import { SimulationPage } from "@/pages/SimulationPage";
+import { PacketsPage } from "@/pages/PacketsPage";
+import { ZeekPage } from "@/pages/ZeekPage";
+import { ComparePage } from "@/pages/ComparePage";
+import { AlertsPage } from "@/pages/AlertsPage";
+import { ReportsPage } from "@/pages/ReportsPage";
+import { SystemPage } from "@/pages/SystemPage";
+
 export default function App() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-semibold">Traffic Analyzer</h1>
-        <p className="text-slate-400 mt-2">Frontend shell initializing…</p>
-      </div>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/simulation" element={<SimulationPage />} />
+          <Route path="/packets" element={<PacketsPage />} />
+          <Route path="/zeek" element={<ZeekPage />} />
+          <Route path="/compare" element={<ComparePage />} />
+          <Route path="/alerts" element={<AlertsPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/system" element={<SystemPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }

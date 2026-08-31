@@ -33,6 +33,7 @@ frontend/dist-ssr/
 *.local
 .vite/
 .eslintcache
+*.tsbuildinfo
 npm-debug.log*
 
 # ---- IDE / OS ----
