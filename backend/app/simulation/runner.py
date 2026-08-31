@@ -36,6 +36,8 @@ class SimulationRunner:
         self.simulation_id = simulation_id
         self._thread: threading.Thread | None = None
         self._ctx: ScenarioContext | None = None
+        self._flush_thread: threading.Thread | None = None
+        self._flush_stop_event = threading.Event()
 
     @property
     def running(self) -> bool:
@@ -59,6 +61,42 @@ class SimulationRunner:
             sim.end_time = utcnow()
             if sim.start_time:
                 sim.duration_sec = (sim.end_time - sim.start_time).total_seconds()
+
+    def _start_flush(self) -> None:
+        self._flush_stop_event.clear()
+        self._flush_thread = threading.Thread(
+            target=self._flush_worker, daemon=True, name=f"sim-flush-{self.simulation_id}"
+        )
+        self._flush_thread.start()
+
+    def _stop_flush(self) -> None:
+        self._flush_stop_event.set()
+        if self._flush_thread is not None:
+            self._flush_thread.join(timeout=3)
+            self._flush_thread = None
+
+    def _flush_worker(self) -> None:
+        """Persist live counters to the DB while the scenario is running."""
+        while not self._flush_stop_event.is_set():
+            ctx = self._ctx
+            if ctx is None:
+                return
+            db = SessionLocal()
+            try:
+                sim = db.get(Simulation, self.simulation_id)
+                if sim is None or sim.status != "running":
+                    return
+                if elapsed := (time.monotonic() - ctx.started_at):
+                    sim.packets_sent = ctx.packets_sent
+                    sim.bytes_sent = ctx.bytes_sent
+                    sim.connections = ctx.connections
+                    sim.rates_per_sec = int(ctx.packets_sent / elapsed)
+                    db.commit()
+            except Exception:  # noqa: BLE001
+                db.rollback()
+            finally:
+                db.close()
+            time.sleep(1)
 
     def _worker(self) -> None:
         db = SessionLocal()
@@ -88,8 +126,12 @@ class SimulationRunner:
             self._mark(sim, "running")
             db.commit()
 
+            self._start_flush()
             started = time.monotonic()
-            scenario.run(self._ctx)
+            try:
+                scenario.run(self._ctx)
+            finally:
+                self._stop_flush()
             elapsed = time.monotonic() - started
 
             sim.packets_sent = self._ctx.packets_sent

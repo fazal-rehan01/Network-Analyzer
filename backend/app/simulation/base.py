@@ -10,6 +10,7 @@ by the runner against approved lab targets (localhost, private ranges, Docker).
 from __future__ import annotations
 
 import threading
+import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
@@ -26,6 +27,8 @@ class ScenarioContext:
     target_port: int | None
     config: dict
     duration_sec: int | None
+    # Monotonic clock timestamp marking when the run began (for live rates).
+    started_at: float = field(default_factory=time.monotonic)
     # progress reporting + cancellation
     _stop_event: threading.Event = field(default_factory=threading.Event)
 
