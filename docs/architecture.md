@@ -131,8 +131,8 @@ Dashboard / Packets / Zeek / Compare / Alerts read from DB
 
 ### Pages
 1. **Dashboard** — KPI cards + charts (traffic over time, protocol distribution, top talkers, detection/incident severity, DNS/HTTP activity) backed by real aggregation endpoints; global or per-capture scope.
-2. **Simulation** — scenario cards with start/stop, status, live stats.
-3. **Packets** — table with filter/search/detail drawer.
+2. **Simulation** — scenario cards with run/stop, target + port input, live polling, history table with per-run stats and status badges.
+3. **Packets** — normalized packet table with client-side search + protocol filter, full evidence detail panel (frame/time/5-tuple/HTTP/DNS/flags/pipeline).
 4. **Zeek** — event/connection logs with defensive rendering.
 5. **Compare** — dedicated Wireshark/TShark (packet-level) vs Zeek (event-level) comparison: capture selector, per-connection correlation status (both / TShark only / Zeek only), side-by-side evidence tables, honest tool-unavailable states.
 6. **Incidents** — SOC queue + detail (status/severity workflow, evidence, notes, history).
@@ -141,7 +141,8 @@ Dashboard / Packets / Zeek / Compare / Alerts read from DB
 
 ### Data fetching
 - Thin typed API client in `frontend/src/api`.
-- React hooks for polling (simulation/capture state) and mutations.
+- `useApi` hook: fetch on mount, optional polling, explicit `refetch()`. The fetcher is kept in a ref, so an unstable inline closure does **not** re-trigger the effect (no background request storms); state-dependent fetchers (scope/capture/filter changes) call `refetch()` explicitly.
+- Route-level code splitting (`React.lazy`) keeps the initial bundle small (182 kB gzip 59 kB) with per-page chunks; a top-level `ErrorBoundary` (in `Layout.tsx`) renders a reload screen instead of a blank app if any page crashes.
 
 ---
 
@@ -314,5 +315,5 @@ Every milestone ships real, honest tests; no test asserts a fabricated value:
 13. **M13** Compare page. ✅
 14. **M14** Reporting (PDF). ✅
 15. **M15** E2E integration testing. ✅
-16. **M16** UI polish, error/empty/loading states, performance. ⏳
+16. **M16** UI polish, error/empty/loading states, performance. ✅
 17. **M17** Final docs + validation. ⏳

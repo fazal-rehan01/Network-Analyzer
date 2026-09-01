@@ -552,3 +552,42 @@ export interface ReportOptions {
 export interface ReportGenerateRequest {
   capture_id?: string | null;
 }
+
+export interface ScenarioInfo {
+  key: string;
+  name: string;
+  description: string;
+  default_port: number | null;
+  suspicious: boolean;
+  default_config: Record<string, unknown>;
+}
+
+export interface SimulationCreate {
+  scenario: string;
+  name?: string;
+  target?: string;
+  target_port?: number | null;
+  config?: Record<string, unknown>;
+}
+
+export interface SimulationRead {
+  id: string;
+  scenario: string;
+  name: string;
+  description: string | null;
+  target: string;
+  target_port: number | null;
+  status: string;
+  start_time: string | null;
+  end_time: string | null;
+  duration_sec: number | null;
+  packets_sent: number;
+  bytes_sent: number;
+  connections: number;
+  rates_per_sec: number;
+  config: Record<string, unknown>;
+  stats: Record<string, unknown>;
+  result: string | null;
+  error: string | null;
+  created_at: string;
+}

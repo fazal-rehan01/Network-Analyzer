@@ -27,7 +27,7 @@ Development proceeds in small, independently verifiable milestones. Tracked in `
 | 13 | Comparison page | ✅ Done |
 | 14 | Reporting | ✅ Done |
 | 15 | E2E workflow tests | ✅ Done |
-| 16 | UI polish + error handling + performance | ⏳ |
+| 16 | UI polish + error handling + performance | ✅ Done |
 | 17 | Final documentation + validation | ⏳ |
 
 ---
@@ -52,6 +52,7 @@ The whole system is modular: the frontend talks only to the FastAPI API and neve
 10. **Alerts/incidents** — SOC incident workflow built on M10 detection findings: severity, status lifecycle (New → Investigating → Contained → Resolved, or → False Positive), analyst notes, evidence, audit history, filtering/search, and dashboard counters.
 11. **Wireshark vs Zeek comparison** — dedicated comparison page showing the same traffic from packet-level (Wireshark/TShark: frames, timestamps, ports, lengths) and event-level (Zeek: conn.log flows, service, duration, bytes, DNS/HTTP/SSL/notices) perspectives, with per-connection correlation status (both / TShark only / Zeek only) reported honestly.
 12. **Reporting** — professional PDF report (reportlab) covering capture scope, simulation history, traffic summary, detection findings, packet-level (Wireshark/TShark) analysis, event-level (Zeek) analysis, TShark vs Zeek comparison, and data-driven recommendations; whole-database or per-capture.
+13. **Polished UI + reliability** — real **Simulation Center** and **Packets** pages (were placeholders) wired to the simulation engine and normalized packet store, code-split route-based lazy loading (initial JS bundle 678 kB → 182 kB), a top-level error boundary so a crashed page never takes down navigation, and a refetch-safe data hook that avoids background request storms.
 
 ---
 

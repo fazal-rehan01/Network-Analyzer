@@ -70,6 +70,12 @@ export function IncidentsPage() {
 
   const apply = (patch: Partial<IncidentListParams>) => {
     setParams((p) => ({ ...p, ...patch, offset: 0 }));
+    list.refetch();
+  };
+
+  const setPage = (patch: Partial<IncidentListParams>) => {
+    setParams((p) => ({ ...p, ...patch }));
+    list.refetch();
   };
 
   const selectIncident = async (id: string) => {
@@ -226,8 +232,8 @@ export function IncidentsPage() {
               offset={list.data.offset}
               hasPrev={hasPrev}
               hasNext={hasNext}
-              onPrev={() => setParams((p) => ({ ...p, offset: Math.max(0, (p.offset ?? 0) - (p.limit ?? 25)) }))}
-              onNext={() => setParams((p) => ({ ...p, offset: (p.offset ?? 0) + (p.limit ?? 25) }))}
+              onPrev={() => setPage({ offset: Math.max(0, (params.offset ?? 0) - (params.limit ?? 25)) })}
+              onNext={() => setPage({ offset: (params.offset ?? 0) + (params.limit ?? 25) })}
             />
           </div>
         ) : (

@@ -126,7 +126,10 @@ export default function Dashboard() {
           <span className="text-slate-500">Scope:</span>
           <select
             value={captureId}
-            onChange={(e) => setCaptureId(e.target.value)}
+            onChange={(e) => {
+              setCaptureId(e.target.value);
+              analytics.refetch();
+            }}
             className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
           >
             <option value="">All captures (global)</option>

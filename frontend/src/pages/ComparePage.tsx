@@ -236,6 +236,7 @@ export function ComparePage() {
   const openCapture = (id: string) => {
     setCaptureId(id);
     setSelected(null);
+    comparison.refetch();
   };
 
   const s = comparison.data;

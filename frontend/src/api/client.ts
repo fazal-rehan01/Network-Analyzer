@@ -30,6 +30,9 @@ import type {
   ConnectionComparison,
   ReportOptions,
   ReportGenerateRequest,
+  ScenarioInfo,
+  SimulationCreate,
+  SimulationRead,
 } from "./types";
 
 const BASE = "/api/v1";
@@ -167,4 +170,12 @@ export const api = {
   reportOptions: () => request<ReportOptions>("/reports/options"),
   reportGenerate: (captureId?: string) =>
     blobRequest("/reports/generate", { capture_id: captureId ?? null }),
+
+  simulationScenarios: () => request<ScenarioInfo[]>("/simulations/scenarios"),
+  simulationList: () => request<SimulationRead[]>("/simulations"),
+  simulationCreate: (payload: SimulationCreate) =>
+    request<SimulationRead>("/simulations", { method: "POST", body: JSON.stringify(payload) }),
+  simulationStart: (id: string) => request<SimulationRead>(`/simulations/${encodeURIComponent(id)}/start`, { method: "POST" }),
+  simulationStop: (id: string) => request<SimulationRead>(`/simulations/${encodeURIComponent(id)}/stop`, { method: "POST" }),
+  simulationGet: (id: string) => request<SimulationRead>(`/simulations/${encodeURIComponent(id)}`),
 };
