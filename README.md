@@ -6,89 +6,112 @@ A professional, defensible cybersecurity project that generates real controlled 
 
 ---
 
-## Status / Milestones
+## Quick Demo
 
-Development proceeds in small, independently verifiable milestones. Tracked in `docs/architecture.md` and mirrored in git history.
+The complete end-to-end demonstration in the exact order:
 
-| # | Milestone | Status |
-|---|-----------|--------|
-| 1 | Repository audit + architecture + project skeleton | ✅ Done |
-| 2 | Backend foundation + database + health checks | ✅ Done |
-| 3 | Frontend shell + navigation + dashboard skeleton | ✅ Done |
-| 4 | Simulation engine | ✅ Done |
-| 5 | Real controlled traffic generation | ✅ Done |
-| 6 | TShark integration + packet capture | ✅ Done |
-| 7 | PCAP upload + packet parsing | ✅ Done |
-| 8 | Zeek integration + log parsing | ✅ Done |
-| 9 | Normalization/correlation layer | ✅ Done |
-| 10 | Detection engine + rules | ✅ Done |
-| 11 | Alerts/incidents | ✅ Done |
-| 12 | Dashboard analytics + charts | ✅ Done |
-| 13 | Comparison page | ✅ Done |
-| 14 | Reporting | ✅ Done |
-| 15 | E2E workflow tests | ✅ Done |
-| 16 | UI polish + error handling + performance | ✅ Done |
-| 17 | Final documentation + validation | ✅ Done |
-
----
-
-## Project Overview
-
-**Traffic Simulation → Controlled Traffic → Packet Capture/PCAP → {TShark, Zeek} → Parsed Data → Normalization → Detection Engine → Database → FastAPI → React Dashboard**
-
-The whole system is modular: the frontend talks only to the FastAPI API and never to shell commands directly.
-
-### Major features
-
-1. **Dashboard** — real analytics computed from the database: total packets/connections/bytes, packets/sec, open + high/critical incidents, protocol distribution, top sources/destinations, top conversations, traffic-over-time, DNS/HTTP stats, detection & incident severity charts, recent incidents (with global or per-capture scope).
-2. **Traffic Simulation Center** — 8 scenarios (normal, HTTP, DNS, ICMP, port scan, connection burst, large data transfer, DNS anomaly).
-3. **Real traffic generation** — actual localhost/lab traffic via Scapy and stdlib sockets (never faked).
-4. **Packet capture** — TShark-driven live capture with interface selection, duration, filter, save PCAP.
-5. **PCAP upload** — validated upload → TShark parse → (Zeek) → normalize → detect → DB → dashboard.
-6. **Wireshark/TShark analysis** — normalized packet model, filters, search, protocol stats, top talkers, conversations, details.
-7. **Zeek analysis** — defensive parsing of conn/dns/http/ssl/files/notice logs with graceful degradation.
-8. **Normalization / correlation** — merges TShark packets with Zeek events into shared normalized Connection/DNS/HTTP records, correlated by canonical 5-tuple, Zeek UID, and time proximity; every row is traceable to its evidence source.
-9. **Threat/anomaly detection** — explainable rule-based detection (port scan, abnormal connection rate, DNS anomaly) over normalized data with configurable thresholds and severity, evidence references back to normalized records (no fake AI).
-10. **Alerts/incidents** — SOC incident workflow built on M10 detection findings: severity, status lifecycle (New → Investigating → Contained → Resolved, or → False Positive), analyst notes, evidence, audit history, filtering/search, and dashboard counters.
-11. **Wireshark vs Zeek comparison** — dedicated comparison page showing the same traffic from packet-level (Wireshark/TShark: frames, timestamps, ports, lengths) and event-level (Zeek: conn.log flows, service, duration, bytes, DNS/HTTP/SSL/notices) perspectives, with per-connection correlation status (both / TShark only / Zeek only) reported honestly.
-12. **Reporting** — professional PDF report (reportlab) covering capture scope, simulation history, traffic summary, detection findings, packet-level (Wireshark/TShark) analysis, event-level (Zeek) analysis, TShark vs Zeek comparison, and data-driven recommendations; whole-database or per-capture.
-13. **Polished UI + reliability** — real **Simulation Center** and **Packets** pages (were placeholders) wired to the simulation engine and normalized packet store, code-split route-based lazy loading (initial JS bundle 678 kB → 182 kB), a top-level error boundary so a crashed page never takes down navigation, and a refetch-safe data hook that avoids background request storms.
+1. **Start backend** — `cd backend && .\.venv\Scripts\Activate.ps1 && python -m uvicorn app.main:app --reload --port 8000`
+2. **Start frontend** — `cd frontend && npm run dev` (in a new terminal)
+3. **Open the dashboard** — http://localhost:5173
+4. **Open Simulation** — Navigate to the Simulation page
+5. **Set lab target** to `127.0.0.1` (the default)
+6. **Open Capture** — Navigate to the Capture page
+7. **Select the Npcap Loopback Adapter** on Windows (or loopback on Linux)
+8. **Start a live capture** — click "Start Capture"
+9. **Return to Simulation** — keep the capture running
+10. **Run `Port Scan Simulation`** — click "Run scenario" on the Port Scan card
+11. **Let the simulation finish** — watch the status go `queued` → `running` → `completed`
+12. **Return to Capture and verify** — stop the capture; the PCAP row appears with packet count > 0
+13. **Open Correlated** — Navigate to the Correlated page
+14. **Select the new capture** — pick the capture you just created
+15. **Run Normalization** — click "Run Normalization" (TShark parses → normalized records created)
+15. **Open Packets and inspect** — Navigate to Packets page; inspect normalized TShark packet evidence
+16. **Open Detect** — Navigate to the Detect page
+17. **Run Detection** — click "Run Detection" on the selected capture
+18. **Verify `Possible Port Scan` finding** — when traffic matches the detection rule, a finding appears with evidence
+19. **Open the finding's evidence** — click the finding to see referenced connection records
+20. **Open Incidents** — Navigate to Incidents page
+21. **Promote the detection finding to an incident** — click "Create Incident" on the finding
+22. **Demonstrate the incident lifecycle**:
+    `NEW` → `INVESTIGATING` → `CONTAINED` → `RESOLVED`
+23. **Add an investigation note** — open the incident and add a note
+24. **Open Dashboard and verify** — analytics reflect the real analyzed data (packets, connections, incidents)
+25. **Open Compare and inspect** — TShark vs Zeek analysis (Zeek shows as unavailable if not installed)
+26. **Open Reports and generate the PDF report** — whole-database or per-capture
 
 ---
 
-## Prerequisites
+## What an Evaluator Should Verify
 
-| Tool | Versions tested | Purpose |
-|------|-----------------|---------|
-| Python | 3.12 | Backend (FastAPI, SQLAlchemy, Scapy) |
-| Node.js | 24 | Frontend (Vite, React, TS, Tailwind) |
-| npm | 11 | Frontend package manager |
-| TShark/Wireshark | 4.6.x | Packet capture + analysis |
-| Zeek (optional) | — | Event/connection analysis |
-| Docker (optional) | — | Containers for lab targets |
-| Git | 2.55 | Version control |
+The project demonstrates this pipeline:
 
-See `docs/setup.md` for full install instructions for each OS.
+```
+Simulation
+    → Live Traffic
+        → TShark/PCAP
+            → Normalization
+                → Detection
+                    → Incident
+                        → Analytics
+                        → TShark vs Zeek Comparison
+                        → Report
+```
+
+**What is real (not faked):**
+
+- **Traffic generation** — real controlled localhost/lab traffic via Scapy and stdlib sockets
+- **TShark captures** — real packets on the wire (Npcap loopback on Windows)
+- **PCAP parsing** — TShark parses uploaded or captured PCAPs into structured data
+- **Normalized records** — come from parsed TShark/Zeek traffic, correlated by 5-tuple + time + UID
+- **Detections** — rule-based, explainable, with evidence references back to normalized records
+- **Incidents** — persisted in the database with full lifecycle and audit history
+- **Dashboard analytics** — computed from database data (counts, rates, distributions, charts)
+- **Reports** — generated from stored project data (professional PDF via reportlab)
+
+---
+
+## Zeek Runtime Note
+
+**Zeek integration and log parsing are implemented.**
+
+If the Zeek executable is **not installed** on the host machine, the application reports Zeek as unavailable instead of fabricating results. The application can still analyze TShark/PCAP data, and Zeek-format fixtures are available for parser/correlation testing when a live Zeek runtime is unavailable.
+
+**Make no mistake:**
+
+- **TShark runtime is required** for live packet capture and PCAP parsing.
+- **Zeek runtime is optional.** The Comparison UI honestly reports unavailable states.
+- **No fake Zeek events** are ever claimed or generated.
+- **Live Zeek execution on Windows has not been verified** — the code path exists but is untested on Windows in this environment.
 
 ---
 
 ## Quick Start (Windows)
 
-```powershell
-# 1. Backend
-cd backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+### Terminal 1 — Backend
 
-# 2. Frontend (new terminal)
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+### Terminal 2 — Frontend
+
+```powershell
 cd frontend
 npm install
 npm run dev
 ```
 
-Then open http://localhost:5173 (dashboard calls http://localhost:8000).
+Then open **http://localhost:5173** (dashboard calls **http://localhost:8000**).
+
+> **Note:** If the virtual environment doesn't exist, create it first:
+> ```powershell
+> cd backend
+> python -m venv .venv
+> .\.venv\Scripts\Activate.ps1
+> pip install -r requirements.txt
+> ```
 
 ---
 
@@ -147,6 +170,8 @@ frontend/
 docs/              # architecture, api, detection-rules, simulation, setup, demo
 ```
 
+---
+
 ## Project Limitations
 
 - **Zeek is optional.** If not installed, the app reports it as unavailable and keeps everything else functional.
@@ -170,3 +195,29 @@ docs/              # architecture, api, detection-rules, simulation, setup, demo
 - [`docs/validation.md`](docs/validation.md)
 - [`docs/setup.md`](docs/setup.md)
 - [`docs/demo.md`](docs/demo.md)
+
+---
+
+## Status / Milestones
+
+Development proceeds in small, independently verifiable milestones. Tracked in `docs/architecture.md` and mirrored in git history.
+
+| # | Milestone | Status |
+|---|-----------|--------|
+| 1 | Repository audit + architecture + project skeleton | ✅ Done |
+| 2 | Backend foundation + database + health checks | ✅ Done |
+| 3 | Frontend shell + navigation + dashboard skeleton | ✅ Done |
+| 4 | Simulation engine | ✅ Done |
+| 5 | Real controlled traffic generation | ✅ Done |
+| 6 | TShark integration + packet capture | ✅ Done |
+| 7 | PCAP upload + packet parsing | ✅ Done |
+| 8 | Zeek integration + log parsing | ✅ Done |
+| 9 | Normalization/correlation layer | ✅ Done |
+| 10 | Detection engine + rules | ✅ Done |
+| 11 | Alerts/incidents | ✅ Done |
+| 12 | Dashboard analytics + charts | ✅ Done |
+| 13 | Comparison page | ✅ Done |
+| 14 | Reporting | ✅ Done |
+| 15 | E2E workflow tests | ✅ Done |
+| 16 | UI polish + error handling + performance | ✅ Done |
+| 17 | Final documentation + validation | ✅ Done |
