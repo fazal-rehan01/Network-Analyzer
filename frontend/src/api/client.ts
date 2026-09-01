@@ -28,6 +28,8 @@ import type {
   CompareStatus,
   CaptureComparison,
   ConnectionComparison,
+  ReportOptions,
+  ReportGenerateRequest,
 } from "./types";
 
 const BASE = "/api/v1";
@@ -48,6 +50,25 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(`${res.status}: ${detail}`);
   }
   return res.json() as Promise<T>;
+}
+
+async function blobRequest(path: string, payload: ReportGenerateRequest): Promise<Blob> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    let detail = res.statusText;
+    try {
+      const body = await res.json();
+      detail = body.detail ?? detail;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(`${res.status}: ${detail}`);
+  }
+  return res.blob();
 }
 
 export const api = {
@@ -142,4 +163,8 @@ export const api = {
   compareCapture: (captureId: string) => request<CaptureComparison>(`/compare/capture/${encodeURIComponent(captureId)}`),
   compareConnection: (connectionId: string) =>
     request<ConnectionComparison>(`/compare/connection/${encodeURIComponent(connectionId)}`),
+
+  reportOptions: () => request<ReportOptions>("/reports/options"),
+  reportGenerate: (captureId?: string) =>
+    blobRequest("/reports/generate", { capture_id: captureId ?? null }),
 };

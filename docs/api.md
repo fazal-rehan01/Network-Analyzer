@@ -234,3 +234,24 @@ Full side-by-side evidence for one connection (404 if unknown):
 
 Each side contains only the evidence that actually exists; absent sides are
 explicit (`present: false`). _(Added in M13)_
+
+## Reports (M14)
+
+### `GET /reports/options`
+Available report scopes:
+```json
+{
+  "global_available": true,
+  "captures": [ { "id", "name", "source", "status",
+                  "packet_count", "byte_count", "created_at" } ]
+}
+```
+
+### `POST /reports/generate`
+Body: `{ "capture_id": null | "..." }` (`null` = whole database).
+Returns a PDF (`Content-Type: application/pdf`) with a descriptive attachment
+filename. 404 if the capture is unknown.
+The PDF contains 8 sections: capture scope, simulation history, traffic
+summary, detection findings, packet-level (TShark) analysis, event-level (Zeek)
+analysis, TShark vs Zeek comparison, and data-driven recommendations. All
+values trace to persisted records. _(Added in M14)_

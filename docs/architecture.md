@@ -136,7 +136,7 @@ Dashboard / Packets / Zeek / Compare / Alerts read from DB
 4. **Zeek** — event/connection logs with defensive rendering.
 5. **Compare** — dedicated Wireshark/TShark (packet-level) vs Zeek (event-level) comparison: capture selector, per-connection correlation status (both / TShark only / Zeek only), side-by-side evidence tables, honest tool-unavailable states.
 6. **Incidents** — SOC queue + detail (status/severity workflow, evidence, notes, history).
-7. **Reports** — generate/download.
+7. **Reports** — scope picker (whole DB or per capture) + "Generate PDF" download; describe the 8 sections included.
 8. **System** — tool availability + capture interface selection.
 
 ### Data fetching
@@ -247,6 +247,36 @@ analysis show vs what does event-level analysis show?" It is honest by design:
 - `backend/app/schemas/compare.py` — payload schemas.
 - `frontend/src/pages/ComparePage.tsx` — comparison UI.
 
+## Reporting (`backend/app/report`)
+
+A professional PDF report (reportlab) composed entirely from persisted records:
+
+1. **Capture scope** — capture metadata (name, source, file, interface, filter,
+   times, duration, packet/byte counts) or whole-database scope.
+2. **Simulation history** — recent scenario runs + generated-traffic stats.
+3. **Traffic summary** — analytics summary counters, top protocols, talkers,
+   conversations, peak traffic moments, DNS/HTTP activity (reuses the M12
+   analytics service).
+4. **Detection findings** — severity breakdown + latest rule findings.
+5. **Packet-level analysis (Wireshark/TShark)** — normalized packet counts, top
+   protocols and busiest hosts from the packet table.
+6. **Event-level analysis (Zeek)** — raw conn/dns/http/ssl/notice log counts +
+   normalized DNS/HTTP and top services.
+7. **TShark vs Zeek comparison** — correlation summary (both / only / only) and
+   tool availability (M13 compare service).
+8. **Recommendations** — remediation steps derived from the actual findings
+   (e.g. scan pattern → tighten firewall rules), never a canned fake list.
+
+`GET /reports/options` lists available scopes; `POST /reports/generate` returns
+the PDF (`application/pdf` + attachment filename). No values are fabricated:
+every number traces to the database.
+
+### Key files
+- `backend/app/services/report.py` — reportlab story builder.
+- `backend/app/api/v1/reports.py` — options + generate endpoints.
+- `backend/app/schemas/report.py` — schemas.
+- `frontend/src/pages/ReportsPage.tsx` — scope picker + download.
+
 ---
 
 ## Milestone Plan
@@ -264,7 +294,7 @@ analysis show vs what does event-level analysis show?" It is honest by design:
 11. **M11** Alerts/incidents endpoints + UI. ✅
 12. **M12** Dashboard analytics + charts (real data). ✅
 13. **M13** Compare page. ✅
-14. **M14** Reporting (PDF). ⏳
+14. **M14** Reporting (PDF). ✅
 15. **M15** E2E integration testing. ⏳
 16. **M16** UI polish, error/empty/loading states, performance. ⏳
 17. **M17** Final docs + validation. ⏳

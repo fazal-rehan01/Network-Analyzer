@@ -10,6 +10,7 @@ from app.api.v1 import (
     detect,
     incidents,
     normalize,
+    reports,
     simulations,
     system,
     zeek,
@@ -25,3 +26,4 @@ api_router.include_router(detect.router)
 api_router.include_router(incidents.router)
 api_router.include_router(analytics.router)
 api_router.include_router(compare.router)
+api_router.include_router(reports.router)

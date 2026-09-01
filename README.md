@@ -25,7 +25,10 @@ Development proceeds in small, independently verifiable milestones. Tracked in `
 | 11 | Alerts/incidents | ✅ Done |
 | 12 | Dashboard analytics + charts | ✅ Done |
 | 13 | Comparison page | ✅ Done |
-| 14 | Reporting | ⏳ |
+| 14 | Reporting | ✅ Done |
+| 15 | E2E workflow tests | ⏳ |
+| 16 | Polishing | ⏳ |
+| 17 | Final docs + validation | ⏳ |
 | 12 | Dashboard analytics + charts | ⏳ |
 | 13 | Wireshark vs Zeek comparison | ⏳ |
 | 14 | Reporting | ⏳ |
@@ -54,7 +57,7 @@ The whole system is modular: the frontend talks only to the FastAPI API and neve
 9. **Threat/anomaly detection** — explainable rule-based detection (port scan, abnormal connection rate, DNS anomaly) over normalized data with configurable thresholds and severity, evidence references back to normalized records (no fake AI).
 10. **Alerts/incidents** — SOC incident workflow built on M10 detection findings: severity, status lifecycle (New → Investigating → Contained → Resolved, or → False Positive), analyst notes, evidence, audit history, filtering/search, and dashboard counters.
 11. **Wireshark vs Zeek comparison** — dedicated comparison page showing the same traffic from packet-level (Wireshark/TShark: frames, timestamps, ports, lengths) and event-level (Zeek: conn.log flows, service, duration, bytes, DNS/HTTP/SSL/notices) perspectives, with per-connection correlation status (both / TShark only / Zeek only) reported honestly.
-12. **Reporting** — exportable PDF report covering capture, simulation, traffic summary, detection, both analyses, comparison, recommendations.
+12. **Reporting** — professional PDF report (reportlab) covering capture scope, simulation history, traffic summary, detection findings, packet-level (Wireshark/TShark) analysis, event-level (Zeek) analysis, TShark vs Zeek comparison, and data-driven recommendations; whole-database or per-capture.
 
 ---
 

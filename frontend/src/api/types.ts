@@ -533,3 +533,22 @@ export interface CaptureComparison {
     correlation_summary: string;
   }[];
 }
+
+export interface ReportCaptureOption {
+  id: string;
+  name: string | null;
+  source: string | null;
+  status: string | null;
+  packet_count: number;
+  byte_count: number;
+  created_at: string | null;
+}
+
+export interface ReportOptions {
+  global_available: boolean;
+  captures: ReportCaptureOption[];
+}
+
+export interface ReportGenerateRequest {
+  capture_id?: string | null;
+}
