@@ -28,7 +28,7 @@ Development proceeds in small, independently verifiable milestones. Tracked in `
 | 14 | Reporting | ✅ Done |
 | 15 | E2E workflow tests | ✅ Done |
 | 16 | UI polish + error handling + performance | ✅ Done |
-| 17 | Final documentation + validation | ⏳ |
+| 17 | Final documentation + validation | ✅ Done |
 
 ---
 
@@ -128,13 +128,12 @@ npm run build
 ```
 backend/
   app/
-    api/v1/        # FastAPI routes (health, simulation, capture, pcap, zeek, detect, alerts, reports, dashboard)
+    api/v1/        # FastAPI routers (system, simulations, captures, normalize, zeek, detect, incidents, analytics, compare, reports)
     core/          # config, security, dependencies
     models/        # SQLAlchemy models
     schemas/       # Pydantic schemas
-    services/      # orchestration logic
-    simulation/    # scenario implementations (normal, http, dns, ...)
-    analysis/      # tshark, zeek parsers
+    services/      # orchestration & domain services (capture, normalize, detect, incident, analytics, compare, report, zeek)
+    analysis/      # external tool parsers (tshark, zeek)
     detection/     # rule engine
     utils/         # subprocess, tools detection, filtering
   tests/
@@ -161,7 +160,13 @@ docs/              # architecture, api, detection-rules, simulation, setup, demo
 
 - [`docs/architecture.md`](docs/architecture.md)
 - [`docs/api.md`](docs/api.md)
-- [`docs/detection-rules.md`](docs/detection-rules.md)
 - [`docs/simulation.md`](docs/simulation.md)
+- [`docs/detection-rules.md`](docs/detection-rules.md)
+- [`docs/incidents.md`](docs/incidents.md)
+- [`docs/comparison.md`](docs/comparison.md)
+- [`docs/reporting.md`](docs/reporting.md)
+- [`docs/e2e-testing.md`](docs/e2e-testing.md)
+- [`docs/polish.md`](docs/polish.md)
+- [`docs/validation.md`](docs/validation.md)
 - [`docs/setup.md`](docs/setup.md)
 - [`docs/demo.md`](docs/demo.md)

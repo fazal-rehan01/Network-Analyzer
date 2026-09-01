@@ -316,4 +316,4 @@ Every milestone ships real, honest tests; no test asserts a fabricated value:
 14. **M14** Reporting (PDF). ✅
 15. **M15** E2E integration testing. ✅
 16. **M16** UI polish, error/empty/loading states, performance. ✅
-17. **M17** Final docs + validation. ⏳
+17. **M17** Final docs + validation. ✅ (see `docs/validation.md`)
