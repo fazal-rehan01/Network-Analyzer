@@ -107,3 +107,63 @@ the normalized records (connection/dns/http) the finding was derived from.
 Return `{ capture_id, total, by_severity }` for a capture's persisted findings.
 
 _(Added in M10)_
+
+## Incidents (M11)
+
+Incidents are analyst-facing records created from M10 detection findings. Creation is
+idempotent: promoting the same finding (or the same deterministic occurrence) never creates
+duplicate incidents. Status transitions are validated server-side against an allowed-transition
+map and recorded in incident history.
+
+### `GET /incidents?status=&severity=&capture_id=&rule_id=&search=&sort_by=&order=&limit=&offset=`
+List incidents with combined filtering, sorting and pagination. Supported filters:
+- `status` — one of `NEW|INVESTIGATING|CONTAINED|RESOLVED|FALSE_POSITIVE` (else 422)
+- `severity` — one of `info|low|medium|high|critical` (else 422)
+- `capture_id`, `rule_id` — exact match
+- `search` — substring match on title/summary/detail/rule name
+- `sort_by` — `created_at` (default) | `updated_at` | `severity`
+- `order` — `desc` (default) | `asc`
+- `limit` (default 50, max 500), `offset` (default 0)
+
+Returns `{ items, total, limit, offset }`. Each item is a snapshot with id, title, severity,
+status, rule, capture name, timestamps, assignee, resolution.
+
+### `POST /incidents/from-finding`
+Body: `{ "detection_finding_id": "...", "title"?, "description"?, "assigned_to"? }`.
+Create an incident from an M10 detection finding. Returns
+`{ incident, created, skipped, existing }`. Idempotent:
+- `created=1` on first creation,
+- `created=0, skipped=1, existing=<id>` if an incident already exists for the finding or the same
+  logical occurrence (capture + rule + evidence). 404 if the finding is unknown.
+
+### `POST /incidents/from-capture?capture_id={id}`
+Promote every finding of a capture into an incident (skipping those that already have one).
+Returns aggregate `{ created, skipped, incident }`.
+
+### `GET /incidents/summary`
+Dashboard counters computed from the incidents table:
+`{ total, open, critical, high, resolved, false_positive, recent }` (recent = newest 5).
+
+### `GET /incidents/{incident_id}`
+Full detail: incident fields, linked `detection_finding_id`, the original `evidence` references,
+`evidence_resolved` (the actual normalized Connection/DNS/HTTP/Packet records looked up by id —
+never raw payloads), `notes` (timeline), and `history` (audit events). 404 if unknown.
+
+### `PATCH /incidents/{incident_id}`
+Update an incident. Body may include `title`, `description`, `assigned_to`, `status`,
+`resolution`, `resolution_notes`. Status transitions are validated against the allowed-transition
+map:
+- `NEW → INVESTIGATING`
+- `INVESTIGATING → CONTAINED | RESOLVED | FALSE_POSITIVE`
+- `CONTAINED → RESOLVED | INVESTIGATING` (reopen)
+- `RESOLVED → INVESTIGATING` (reopen), `FALSE_POSITIVE → INVESTIGATING` (reopen)
+
+Entering `RESOLVED`/`FALSE_POSITIVE` sets `closed_at` and `resolution`; reopening clears them.
+Invalid transitions return 400; unknown status values return 422. 404 if unknown.
+
+### `POST /incidents/{incident_id}/notes`
+Body: `{ "text": "...", "author"? }`. Add an analyst note to the timeline (records a
+`note_added` history event). Blank/empty notes return 422. 201 on success.
+
+### `DELETE /incidents/{incident_id}`
+Delete an incident (cleanup action). 204 on success, 404 if unknown._(Added in M11)_

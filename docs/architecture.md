@@ -113,7 +113,10 @@ Dashboard / Packets / Zeek / Compare / Alerts read from DB
 - `packets` — **normalized metadata** (ts, src/dst ip+port, proto, len, tcp flags, dns/http/icmp details). Raw payloads are **not** stored; reference to the PCAP file is kept.
 - `connections` — 5-tuple flows built by normalization (aggregation of packets / matching Zeek conn.log).
 - `dns_events`, `http_events`, `ssl_events` — protocol-specific normalized events (from both TShark and Zeek).
-- `alerts` — detection output with type/severity/source/dest/timestamp/reason/evidence/status.
+- `detection_findings` — M10 detection output (rule, severity, score, summary, detail, evidence refs).
+- `incidents` — analyst-facing incident created *from* a detection finding (snapshot of severity/rule/evidence + lifecycle timestamps, status, assignee, resolution). Idempotency is enforced via a unique `detection_finding_id` and a deterministic `occurrence_key`.
+- `incident_notes` — investigation note timeline per incident.
+- `incident_events` — audit/history log of meaningful lifecycle changes (created, status_changed, assigned, note_added, resolved, marked_false_positive, reopened).
 - `simulations` — scenario runs + generated-stats.
 - `reports` — generated report records + path.
 
@@ -132,7 +135,7 @@ Dashboard / Packets / Zeek / Compare / Alerts read from DB
 3. **Packets** — table with filter/search/detail drawer.
 4. **Zeek** — event/connection logs with defensive rendering.
 5. **Compare** — Wireshark(TShark) vs Zeek correlation view.
-6. **Alerts** — severity/status management + evidence drill-down.
+6. **Incidents** — SOC queue + detail (status/severity workflow, evidence, notes, history).
 7. **Reports** — generate/download.
 8. **System** — tool availability + capture interface selection.
 
@@ -156,6 +159,48 @@ Initial rules:
 
 Thresholds are configurable (env or API).
 
+## Incident Management (`backend/app/incidents`)
+
+M11 consumes M10 **DetectionFinding** rows (it does not re-do detection). Findings can be promoted
+into **Incident** records either individually (`POST /incidents/from-finding`) or en-masse for a
+capture (`POST /incidents/from-capture`).
+
+### Data flow
+
+```
+Simulation / PCAP -> TShark -> Zeek -> Normalization (M9)
+   -> DetectionFinding (M10) -> Incident (M11) -> Analyst investigation -> Resolve / False Positive
+```
+
+An incident snapshots the finding's severity, rule, capture, summary, detail and **evidence
+references**, and keeps the `detection_finding_id` for full traceability. Evidence references are
+resolved back to the actual normalized `connection`/`dns`/`http`/`packet` records on demand (never
+raw payloads).
+
+### Idempotency / deduplication
+- `incidents.detection_finding_id` is unique — promoting the same finding twice returns the existing
+  incident.
+- `incidents.occurrence_key` is a deterministic fingerprint of `(capture, rule, sorted evidence ids)`
+  so a finding re-emitted by a detection re-run maps to the same incident instead of creating copies.
+
+### Status lifecycle
+```
+NEW -> INVESTIGATING -> CONTAINED -> RESOLVED
+                 \         |
+                  \        v
+                   -> FALSE_POSITIVE
+```
+Reopen is supported and deliberate: `RESOLVED -> INVESTIGATING`, `FALSE_POSITIVE -> INVESTIGATING`,
+and `CONTAINED -> INVESTIGATING`. Transitions are validated server-side (`ALLOWED_TRANSITIONS` in
+`app/core/enums.py`) and rejected (400) otherwise; unknown statuses return 422.
+
+### Key files
+- `backend/app/models/incident.py` — `Incident`, `IncidentNote`, `IncidentEvent` (+ indexes).
+- `backend/app/services/incident.py` — creation, idempotency, transitions, notes, history, dashboard summary.
+- `backend/app/api/v1/incidents.py` — REST endpoints.
+- `backend/app/core/enums.py` — centralized statuses/severities/transition map.
+- `frontend/src/pages/IncidentsPage.tsx` — SOC incidents queue + detail panel.
+
 ---
 
 ## Milestone Plan
@@ -170,7 +215,7 @@ Thresholds are configurable (env or API).
 8. **M8** Zeek integration + defensive log parsers. ✅
 9. **M9** Normalization/correlation (packets→connections, TShark↔Zeek). ✅
 10. **M10** Detection engine + rules + tests. ✅
-11. **M11** Alerts/incidents endpoints + UI. ⏳
+11. **M11** Alerts/incidents endpoints + UI. ✅
 12. **M12** Dashboard analytics + charts (real data). ⏳
 13. **M13** Compare page. ⏳
 14. **M14** Reporting (PDF). ⏳

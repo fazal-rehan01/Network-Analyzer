@@ -236,3 +236,101 @@ export interface DetectionFindingRead {
   ref_type: string | null;
   created_at: string | null;
 }
+
+export interface IncidentRead {
+  id: string;
+  detection_finding_id: string;
+  capture_id: string | null;
+  capture_name: string | null;
+  rule_id: string | null;
+  rule_name: string | null;
+  title: string;
+  description: string | null;
+  severity: string;
+  status: string;
+  score: number;
+  summary: string | null;
+  detail: string | null;
+  ref_type: string | null;
+  assigned_to: string | null;
+  resolution: string | null;
+  resolution_notes: string | null;
+  closed_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  first_seen_at: string | null;
+  last_seen_at: string | null;
+}
+
+export interface IncidentNoteRead {
+  id: string;
+  incident_id: string;
+  text: string;
+  author: string | null;
+  created_at: string | null;
+}
+
+export interface IncidentEventRead {
+  id: string;
+  incident_id: string;
+  event_type: string;
+  old_status: string | null;
+  new_status: string | null;
+  message: string | null;
+  actor: string | null;
+  created_at: string | null;
+}
+
+export interface IncidentDetail extends IncidentRead {
+  evidence: Array<{
+    type: string;
+    id: string | null;
+    src: string | null;
+    dst: string | null;
+    detail: string | null;
+  }>;
+  evidence_resolved: Array<{
+    type: string;
+    id: string | null;
+    status: string;
+    record: Record<string, unknown> | null;
+  }>;
+  notes: IncidentNoteRead[];
+  history: IncidentEventRead[];
+}
+
+export interface IncidentCreateResult {
+  incident: IncidentRead | null;
+  created: number;
+  skipped: number;
+  existing: string | null;
+}
+
+export interface IncidentListResult {
+  items: IncidentRead[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface IncidentSummary {
+  total: number;
+  open: number;
+  critical: number;
+  high: number;
+  resolved: number;
+  false_positive: number;
+  recent: IncidentRead[];
+}
+
+export interface IncidentListParams {
+  status?: string;
+  severity?: string;
+  capture_id?: string;
+  rule_id?: string;
+  search?: string;
+  sort_by?: string;
+  order?: string;
+  limit?: number;
+  offset?: number;
+}

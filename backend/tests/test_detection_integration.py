@@ -143,3 +143,73 @@ def test_tshark_end_to_end_detection(tmp_path, db_session, client):
         FindingRow.capture_id == cap.id
     ).count()
     assert total_db == body["findings"]
+
+
+def test_tshark_detection_to_incident_end_to_end(tmp_path, db_session, client):
+    """MILESTONE 11: promote a real M10 finding into an incident and verify the
+    incident's evidence resolves to the real normalized records, and that
+    dashboard counters reflect real database data."""
+    if not tshark_available():
+        pytest.skip("TShark not installed; cannot parse a real PCAP")
+
+    pcap = tmp_path / "trigger.pcap"
+    build_trigger_pcap(pcap)
+    cap = Capture(name="detect-incident-e2e", source="upload", status="done", file_path=str(pcap))
+    db_session.add(cap)
+    db_session.commit()
+    db_session.refresh(cap)
+
+    norm_svc.normalize_capture(db_session, pcap, capture_id=cap.id)
+    run_resp = client.post("/api/v1/detect/run", params={"capture_id": cap.id})
+    assert run_resp.status_code == 200
+
+    findings = client.get("/api/v1/detect/findings", params={"capture_id": cap.id}).json()
+    port_scan = next(f for f in findings if f["rule_id"] == "port_scan")
+
+    # Generate the incident detail via API, referencing the real finding.
+    resp = client.post(
+        "/api/v1/incidents/from-finding",
+        json={"detection_finding_id": port_scan["id"], "title": "review port scan"},
+    )
+    assert resp.status_code == 200
+    inc_id = resp.json()["incident"]["id"]
+    detail = client.get(f"/api/v1/incidents/{inc_id}").json()
+
+    # Incident inherits severity/rule/capture/evidence from the finding.
+    assert detail["severity"] == port_scan["severity"]
+    assert detail["rule_id"] == "port_scan"
+    assert detail["capture_id"] == cap.id
+    assert detail["detection_finding_id"] == port_scan["id"]
+
+    # Evidence references resolve to the real normalized Connection records.
+    conn_ids = {r.id for r in db_session.query(Connection).filter(Connection.capture_id == cap.id).all()}
+    assert detail["evidence"]
+    ok_ev = [e for e in detail["evidence_resolved"] if e["status"] == "ok" and e["type"] == "connection"]
+    assert ok_ev, "no resolved connection evidence on the incident"
+    for ev in detail["evidence"]:
+        assert ev["type"] == "connection"
+        assert ev["id"] in conn_ids
+
+    # Promoting the same finding again is idempotent (no duplicate incident).
+    dup = client.post(
+        "/api/v1/incidents/from-finding", json={"detection_finding_id": port_scan["id"]}
+    ).json()
+    assert dup["created"] == 0
+    assert dup["existing"] == inc_id
+
+    # Open the incident through the frontend-facing detail contract + lifecycle via API.
+    assert client.patch(f"/api/v1/incidents/{inc_id}", json={"status": "INVESTIGATING"}).status_code == 200
+    assert client.post(f"/api/v1/incidents/{inc_id}/notes", json={"text": "checking evidence", "author": "e2e"}).status_code == 201
+    assert client.patch(f"/api/v1/incidents/{inc_id}", json={"status": "CONTAINED"}).status_code == 200
+    resolved = client.patch(f"/api/v1/incidents/{inc_id}", json={"status": "RESOLVED"}).json()
+    assert resolved["closed_at"] is not None
+
+    detail = client.get(f"/api/v1/incidents/{inc_id}").json()
+    assert any(h["event_type"] == "resolved" for h in detail["history"])
+    assert any(h["event_type"] == "note_added" for h in detail["history"])
+
+    # Dashboard summary shows the resolved incident (real DB data).
+    summary = client.get("/api/v1/incidents/summary").json()
+    assert isinstance(summary["total"], int)
+    assert isinstance(summary["open"], int)
+    assert summary["resolved"] >= 1

@@ -7,8 +7,8 @@ import { PacketsPage } from "@/pages/PacketsPage";
 import { ZeekPage } from "@/pages/ZeekPage";
 import { CorrelatedPage } from "@/pages/CorrelatedPage";
 import { DetectPage } from "@/pages/DetectPage";
+import { IncidentsPage } from "@/pages/IncidentsPage";
 import { ComparePage } from "@/pages/ComparePage";
-import { AlertsPage } from "@/pages/AlertsPage";
 import { ReportsPage } from "@/pages/ReportsPage";
 import { SystemPage } from "@/pages/SystemPage";
 
@@ -24,8 +24,8 @@ export default function App() {
           <Route path="/zeek" element={<ZeekPage />} />
           <Route path="/correlated" element={<CorrelatedPage />} />
           <Route path="/detect" element={<DetectPage />} />
+          <Route path="/incidents" element={<IncidentsPage />} />
           <Route path="/compare" element={<ComparePage />} />
-          <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/system" element={<SystemPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

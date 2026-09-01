@@ -17,6 +17,13 @@ import type {
   DetectionRunResult,
   DetectionSummary,
   DetectionFindingRead,
+  IncidentRead,
+  IncidentDetail,
+  IncidentCreateResult,
+  IncidentListResult,
+  IncidentListParams,
+  IncidentNoteRead,
+  IncidentSummary,
 } from "./types";
 
 const BASE = "/api/v1";
@@ -95,4 +102,29 @@ export const api = {
   },
   detectSummary: (captureId: string) =>
     request<DetectionSummary>(`/detect/summary?capture_id=${encodeURIComponent(captureId)}`),
+
+  incidentList: (params: IncidentListParams = {}) => {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== "") qs.set(k, String(v));
+    });
+    return request<IncidentListResult>(`/incidents?${qs.toString()}`);
+  },
+  incidentGet: (id: string) => request<IncidentDetail>(`/incidents/${id}`),
+  incidentCreateFromFinding: (detection_finding_id: string, title?: string, description?: string) =>
+    request<IncidentCreateResult>("/incidents/from-finding", {
+      method: "POST",
+      body: JSON.stringify({ detection_finding_id, title, description }),
+    }),
+  incidentCreateFromCapture: (captureId: string) =>
+    request<IncidentCreateResult>(`/incidents/from-capture?capture_id=${encodeURIComponent(captureId)}`, { method: "POST" }),
+  incidentPatch: (id: string, payload: Record<string, unknown>) =>
+    request<IncidentRead>(`/incidents/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  incidentAddNote: (id: string, text: string, author?: string) =>
+    request<IncidentNoteRead>(`/incidents/${id}/notes`, {
+      method: "POST",
+      body: JSON.stringify({ text, author }),
+    }),
+  incidentDelete: (id: string) => request<void>(`/incidents/${id}`, { method: "DELETE" }),
+  incidentSummary: () => request<IncidentSummary>("/incidents/summary"),
 };
