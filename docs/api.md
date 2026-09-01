@@ -87,3 +87,23 @@ Return normalized HTTP events, each tagged with `source` and either a `zeek_uid`
 Return normalized per-packet metadata (TShark evidence) for a capture.
 
 _(Added in M9)_
+
+## Detection
+
+### `GET /detect/rules`
+List every registered detection rule: `[{ id, name, default_severity }]`.
+
+### `POST /detect/run?capture_id={id}`
+Run all detection rules over a capture's normalized data and persist findings. Idempotent (clears prior findings
+for the capture, then recomputes). Returns `{ capture_id, findings, rules_evaluated, by_severity }`. Captures with
+no normalized data simply yield zero findings (graceful, non-erroring).
+
+### `GET /detect/findings?capture_id={id}&severity={s}&limit={n}`
+Query persisted detection findings. Optional `severity` filter (`info|low|medium|high|critical`). Each finding
+includes `rule_id`, `rule_name`, `severity`, `score`, `summary`, `detail`, and `evidence` — an array referencing
+the normalized records (connection/dns/http) the finding was derived from.
+
+### `GET /detect/summary?capture_id={id}`
+Return `{ capture_id, total, by_severity }` for a capture's persisted findings.
+
+_(Added in M10)_

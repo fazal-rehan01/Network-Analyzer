@@ -2,6 +2,7 @@
 from app.models.analysis import AnalysisJob
 from app.models.capture import Capture
 from app.models.simulation import Simulation
+from app.models.detection import DetectionFinding
 from app.models.normalized import (
     Connection,
     DnsEvent,
@@ -21,6 +22,7 @@ __all__ = [
     "AnalysisJob",
     "Capture",
     "Simulation",
+    "DetectionFinding",
     "Packet",
     "Connection",
     "DnsEvent",

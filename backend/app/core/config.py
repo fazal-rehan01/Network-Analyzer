@@ -55,6 +55,15 @@ class Settings(BaseSettings):
         default_factory=lambda: ["http://localhost:5173", "http://127.0.0.1:5173"]
     )
 
+    # Detection engine thresholds (M10) — all configurable via env/.env.
+    detect_portscan_min_ports: int = 10
+    detect_conn_rate_window_sec: float = 10.0
+    detect_conn_rate_max_per_window: int = 100
+    detect_dns_nxdomain_min: int = 5
+    detect_dns_query_diversity_min: int = 50
+    detect_severity_high_multiplier: float = 2.0
+    detect_severity_critical_multiplier: float = 4.0
+
     @property
     def upload_dir_abs(self) -> Path:
         return self.storage_dir / self.upload_dir

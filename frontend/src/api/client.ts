@@ -13,6 +13,10 @@ import type {
   DnsEventRead,
   HttpEventRead,
   PacketRead,
+  RuleInfo,
+  DetectionRunResult,
+  DetectionSummary,
+  DetectionFindingRead,
 } from "./types";
 
 const BASE = "/api/v1";
@@ -80,4 +84,15 @@ export const api = {
     const params = new URLSearchParams({ capture_id: captureId, limit: String(limit) });
     return request<PacketRead[]>(`/normalize/packets?${params.toString()}`);
   },
+
+  detectRules: () => request<RuleInfo[]>("/detect/rules"),
+  detectRun: (captureId: string) =>
+    request<DetectionRunResult>(`/detect/run?capture_id=${encodeURIComponent(captureId)}`, { method: "POST" }),
+  detectFindings: (captureId: string, severity?: string, limit = 500) => {
+    const params = new URLSearchParams({ capture_id: captureId, limit: String(limit) });
+    if (severity) params.set("severity", severity);
+    return request<DetectionFindingRead[]>(`/detect/findings?${params.toString()}`);
+  },
+  detectSummary: (captureId: string) =>
+    request<DetectionSummary>(`/detect/summary?capture_id=${encodeURIComponent(captureId)}`),
 };

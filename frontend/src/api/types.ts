@@ -197,3 +197,42 @@ export interface PacketRead {
   source: string;
   created_at: string;
 }
+
+export interface RuleInfo {
+  id: string;
+  name: string;
+  default_severity: string;
+}
+
+export interface DetectionRunResult {
+  capture_id: string | null;
+  findings: number;
+  rules_evaluated: number;
+  by_severity: Record<string, number>;
+}
+
+export interface DetectionSummary {
+  capture_id: string | null;
+  total: number;
+  by_severity: Record<string, number>;
+}
+
+export interface DetectionFindingRead {
+  id: string;
+  capture_id: string | null;
+  rule_id: string | null;
+  rule_name: string | null;
+  severity: string;
+  score: number;
+  summary: string | null;
+  detail: string | null;
+  evidence: Array<{
+    type: string;
+    id: string | null;
+    src: string | null;
+    dst: string | null;
+    detail: string | null;
+  }>;
+  ref_type: string | null;
+  created_at: string | null;
+}

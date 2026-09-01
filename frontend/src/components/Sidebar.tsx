@@ -9,6 +9,7 @@ const NAV = [
   { to: "/correlated", label: "Correlated", icon: "M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" },
   { to: "/compare", label: "Compare", icon: "M11 4H4v11h7V4zM20 9h-7v6h7V9zM11 17H4v3h7v-3zM20 17h-7v3h7v-3z" },
   { to: "/alerts", label: "Alerts", icon: "M12 3v2m0 14v2m-7-9H3m18 0h-2M6 6l1.5 1.5M18 6l-1.5 1.5M6 12a6 6 0 1012 0 6 6 0 00-12 0z" },
+  { to: "/detect", label: "Detect", icon: "M12 3a9 9 0 109 9 9 9 0 00-9-9zm0 5v5l3 3" },
   { to: "/reports", label: "Reports", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.6a2 2 0 011.4.6l4.4 4.4a2 2 0 01.6 1.4V19a2 2 0 01-2 2z" },
   { to: "/system", label: "System", icon: "M12 15a3 3 0 100-6 3 3 0 000 6z M19 12a7 7 0 00-.1-1.2l2.1-1.6-2-3.4-2.5 1a7 7 0 00-2-1.2L14.2 3h-4l-.3 2.6a7 7 0 00-2 1.2l-2.5-1-2 3.4 2.1 1.6A7 7 0 005 12c0 .4 0 .8.1 1.2l-2.1 1.6 2 3.4 2.5-1a7 7 0 002 1.2l.3 2.6h4l.3-2.6a7 7 0 002-1.2l2.5 1 2-3.4-2.1-1.6c.1-.4.1-.8.1-1.2z" },
 ];
