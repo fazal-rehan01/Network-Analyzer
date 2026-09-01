@@ -3,7 +3,16 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from app.api.v1 import captures, detect, incidents, normalize, simulations, system, zeek
+from app.api.v1 import (
+    analytics,
+    captures,
+    detect,
+    incidents,
+    normalize,
+    simulations,
+    system,
+    zeek,
+)
 
 api_router = APIRouter()
 api_router.include_router(system.router)
@@ -13,3 +22,4 @@ api_router.include_router(zeek.router)
 api_router.include_router(normalize.router)
 api_router.include_router(detect.router)
 api_router.include_router(incidents.router)
+api_router.include_router(analytics.router)

@@ -24,6 +24,7 @@ import type {
   IncidentListParams,
   IncidentNoteRead,
   IncidentSummary,
+  DashboardAnalytics,
 } from "./types";
 
 const BASE = "/api/v1";
@@ -127,4 +128,10 @@ export const api = {
     }),
   incidentDelete: (id: string) => request<void>(`/incidents/${id}`, { method: "DELETE" }),
   incidentSummary: () => request<IncidentSummary>("/incidents/summary"),
+
+  analyticsDashboard: (captureId?: string) => {
+    const qs = new URLSearchParams();
+    if (captureId) qs.set("capture_id", captureId);
+    return request<DashboardAnalytics>(`/analytics/dashboard?${qs.toString()}`);
+  },
 };

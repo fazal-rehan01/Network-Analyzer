@@ -213,3 +213,27 @@ def test_tshark_detection_to_incident_end_to_end(tmp_path, db_session, client):
     assert isinstance(summary["total"], int)
     assert isinstance(summary["open"], int)
     assert summary["resolved"] >= 1
+
+    # MILESTONE 12: real-database analytics reflect this processed capture.
+    anal = client.get("/api/v1/analytics/dashboard").json()
+    assert anal["scope"] == "global"
+    assert anal["summary"]["packets"] >= 1
+    assert anal["summary"]["connections"] >= 12
+    assert anal["summary"]["bytes_total"] > 0
+    assert anal["protocol_distribution"]
+    assert anal["top_sources"]
+    assert anal["top_conversations"]
+    assert anal["detection"]["total"] >= 1
+    assert anal["incidents"]["total"] >= 1
+    assert any(r["id"] == inc_id for r in anal["recent_incidents"])
+    assert anal["traffic_over_time"], "analytics traffic-over-time should be populated from real packets"
+    assert anal["dns_stats"]["total"] >= 1
+    assert anal["http_stats"]["total"] >= 0
+
+    # Per-capture analytics scope for this exact capture (deterministic).
+    cap_anal = client.get("/api/v1/analytics/dashboard", params={"capture_id": cap.id}).json()
+    assert cap_anal["scope"] == "capture"
+    assert cap_anal["capture_id"] == cap.id
+    assert cap_anal["summary"]["connections"] >= 12
+    assert cap_anal["traffic_over_time"]
+    assert any(r["id"] == inc_id for r in cap_anal["recent_incidents"])

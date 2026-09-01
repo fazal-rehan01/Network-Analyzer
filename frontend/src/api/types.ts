@@ -334,3 +334,88 @@ export interface IncidentListParams {
   limit?: number;
   offset?: number;
 }
+
+export interface AnalyticsSummary {
+  captures: number;
+  packets: number;
+  connections: number;
+  bytes_total: number;
+  packets_per_sec: number;
+  open_incidents: number;
+  high_critical_incidents: number;
+  resolved_incidents: number;
+}
+
+export interface ProtocolSlice {
+  proto: string;
+  count: number;
+  bytes: number;
+}
+
+export interface TalkerSlice {
+  ip: string;
+  packets: number;
+  bytes: number;
+}
+
+export interface ConversationSlice {
+  src: string;
+  dst: string;
+  proto: string;
+  packets: number;
+  bytes: number;
+}
+
+export interface TrafficPoint {
+  ts: number;
+  packets: number;
+  bytes: number;
+}
+
+export interface DnsStats {
+  total: number;
+  unique_queries: number;
+  by_rcode: Record<string, number>;
+  top_queries: { query: string; count: number }[];
+}
+
+export interface HttpStats {
+  total: number;
+  by_method: Record<string, number>;
+  by_status: Record<string, number>;
+  top_hosts: { host: string; count: number }[];
+}
+
+export interface SeverityCount {
+  total: number;
+  info: number;
+  low: number;
+  medium: number;
+  high: number;
+  critical: number;
+}
+
+export interface DashboardAnalytics {
+  scope: string;
+  capture_id: string | null;
+  summary: AnalyticsSummary;
+  protocol_distribution: ProtocolSlice[];
+  top_sources: TalkerSlice[];
+  top_destinations: TalkerSlice[];
+  top_conversations: ConversationSlice[];
+  traffic_over_time: TrafficPoint[];
+  dns_stats: DnsStats;
+  http_stats: HttpStats;
+  detection: SeverityCount;
+  incidents: SeverityCount;
+  recent_incidents: {
+    id: string;
+    title: string;
+    severity: string;
+    status: string;
+    rule_name: string | null;
+    rule_id: string | null;
+    capture_id: string | null;
+    created_at: string | null;
+  }[];
+}

@@ -130,7 +130,7 @@ Dashboard / Packets / Zeek / Compare / Alerts read from DB
 - **Recharts** for charts.
 
 ### Pages
-1. **Dashboard** — KPI cards, protocol donut, top talkers, conversations, traffic-over-time, recent alerts.
+1. **Dashboard** — KPI cards + charts (traffic over time, protocol distribution, top talkers, detection/incident severity, DNS/HTTP activity) backed by real aggregation endpoints; global or per-capture scope.
 2. **Simulation** — scenario cards with start/stop, status, live stats.
 3. **Packets** — table with filter/search/detail drawer.
 4. **Zeek** — event/connection logs with defensive rendering.
@@ -201,7 +201,28 @@ and `CONTAINED -> INVESTIGATING`. Transitions are validated server-side (`ALLOWE
 - `backend/app/core/enums.py` — centralized statuses/severities/transition map.
 - `frontend/src/pages/IncidentsPage.tsx` — SOC incidents queue + detail panel.
 
+## Dashboard Analytics (`backend/app/analytics`)
+
+Aggregations are computed **server-side from the real database** by a single
+`GET /analytics/dashboard` endpoint (global or per-capture via `?capture_id=`).
+There is no second analytics data layer and no fabricated numbers — every value
+traces to persisted captures/packets/connections/dns/http/detections/incidents.
+
+### Efficiency
+- Counts/sums use SQL `GROUP BY`; only top-N rows are returned to the browser.
+- Traffic-over-time is bucketed per second and downsampled to at most 120 points
+  so a large capture never floods the frontend.
+- No N+1 patterns: per-capture vs global reuse the same queries with an optional
+  capture filter.
+
+### Key files
+- `backend/app/services/analytics.py` — all aggregation helpers.
+- `backend/app/api/v1/analytics.py` — `GET /analytics/dashboard`.
+- `backend/app/schemas/analytics.py` — typed payload schemas.
+- `frontend/src/pages/Dashboard.tsx` — KPI cards + recharts visualizations.
+
 ---
+
 
 ## Milestone Plan
 
@@ -216,7 +237,7 @@ and `CONTAINED -> INVESTIGATING`. Transitions are validated server-side (`ALLOWE
 9. **M9** Normalization/correlation (packets→connections, TShark↔Zeek). ✅
 10. **M10** Detection engine + rules + tests. ✅
 11. **M11** Alerts/incidents endpoints + UI. ✅
-12. **M12** Dashboard analytics + charts (real data). ⏳
+12. **M12** Dashboard analytics + charts (real data). ✅
 13. **M13** Compare page. ⏳
 14. **M14** Reporting (PDF). ⏳
 15. **M15** E2E integration testing. ⏳

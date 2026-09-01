@@ -23,7 +23,8 @@ Development proceeds in small, independently verifiable milestones. Tracked in `
 | 9 | Normalization/correlation layer | ✅ Done |
 | 10 | Detection engine + rules | ✅ Done |
 | 11 | Alerts/incidents | ✅ Done |
-| 12 | Dashboard analytics + charts | ⏳ |
+| 12 | Dashboard analytics + charts | ✅ Done |
+| 13 | Comparison page | ⏳ |
 | 12 | Dashboard analytics + charts | ⏳ |
 | 13 | Wireshark vs Zeek comparison | ⏳ |
 | 14 | Reporting | ⏳ |
@@ -41,7 +42,7 @@ The whole system is modular: the frontend talks only to the FastAPI API and neve
 
 ### Major features
 
-1. **Dashboard** — totals, active incident counters, recent unresolved critical/high incidents (from real data).
+1. **Dashboard** — real analytics computed from the database: total packets/connections/bytes, packets/sec, open + high/critical incidents, protocol distribution, top sources/destinations, top conversations, traffic-over-time, DNS/HTTP stats, detection & incident severity charts, recent incidents (with global or per-capture scope).
 2. **Traffic Simulation Center** — 8 scenarios (normal, HTTP, DNS, ICMP, port scan, connection burst, large data transfer, DNS anomaly).
 3. **Real traffic generation** — actual localhost/lab traffic via Scapy and stdlib sockets (never faked).
 4. **Packet capture** — TShark-driven live capture with interface selection, duration, filter, save PCAP.

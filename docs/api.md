@@ -167,3 +167,32 @@ Body: `{ "text": "...", "author"? }`. Add an analyst note to the timeline (recor
 
 ### `DELETE /incidents/{incident_id}`
 Delete an incident (cleanup action). 204 on success, 404 if unknown._(Added in M11)_
+
+## Analytics (M12)
+
+### `GET /analytics/dashboard?capture_id={id}`
+Real-database analytics for the dashboard. With no `capture_id`, aggregates across
+all captures (global); with a `capture_id`, scoped to that capture (404 if unknown).
+
+Response shape:
+```json
+{
+  "scope": "global | capture",
+  "capture_id": null | "...",
+  "summary": { "captures", "packets", "connections", "bytes_total",
+               "packets_per_sec", "open_incidents",
+               "high_critical_incidents", "resolved_incidents" },
+  "protocol_distribution": [ { "proto", "count", "bytes" } ],
+  "top_sources": [ { "ip", "packets", "bytes" } ],
+  "top_destinations": [ { "ip", "packets", "bytes" } ],
+  "top_conversations": [ { "src", "dst", "proto", "packets", "bytes" } ],
+  "traffic_over_time": [ { "ts", "packets", "bytes" } ],
+  "dns_stats": { "total", "unique_queries", "by_rcode", "top_queries" },
+  "http_stats": { "total", "by_method", "by_status", "top_hosts" },
+  "detection": { "total", "info", "low", "medium", "high", "critical" },
+  "incidents": { "total", "info", "low", "medium", "high", "critical" },
+  "recent_incidents": [ ... ]
+}
+```
+All values are derived from persisted records; nothing is fabricated. Traffic
+over time is downsampled to <= 120 points. _(Added in M12)_
