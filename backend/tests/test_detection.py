@@ -78,10 +78,65 @@ def test_port_scan_negative_udp_only():
 
 
 def test_port_scan_severity_scales_with_magnitude():
-    low = detect_possible_port_scan(ctx([mk_conn("10.0.0.1", "10.0.0.2", dport=p) for p in range(12)]))
-    high = detect_possible_port_scan(ctx([mk_conn("10.0.0.1", "10.0.0.2", dport=p) for p in range(60)]))
-    assert low[0].severity == "medium"
-    assert high[0].severity == "critical"
+    # ratio 12/10 = 1.2  -> stays medium
+    medium = detect_possible_port_scan(ctx([mk_conn("10.0.0.1", "10.0.0.2", dport=p) for p in range(12)]))
+    # ratio 25/10 = 2.5  -> escalates to high
+    high = detect_possible_port_scan(ctx([mk_conn("10.0.0.1", "10.0.0.2", dport=p) for p in range(25)]))
+    # ratio 60/10 = 6.0  -> escalates to critical
+    critical = detect_possible_port_scan(ctx([mk_conn("10.0.0.1", "10.0.0.2", dport=p) for p in range(60)]))
+    assert medium[0].severity == "medium"
+    assert high[0].severity == "high"
+    assert critical[0].severity == "critical"
+
+
+def test_conn_rate_severity_scales_with_magnitude():
+    # Peak 120 (1.2x) -> medium; 300 (3x) -> high; 450 (4.5x) -> critical.
+    th = {"conn_rate_window_sec": 10.0, "conn_rate_max_per_window": 100}
+    med_conns = [mk_conn("10.0.0.1", "10.0.0.2", dport=i, first_ts=1000.0 + i * 0.001) for i in range(120)]
+    high_conns = [mk_conn("10.0.0.1", "10.0.0.2", dport=i, first_ts=1000.0 + i * 0.001) for i in range(300)]
+    crit_conns = [mk_conn("10.0.0.1", "10.0.0.2", dport=i, first_ts=1000.0 + i * 0.001) for i in range(450)]
+    med = detect_abnormal_connection_rate(ctx(med_conns, thresholds=th))
+    high = detect_abnormal_connection_rate(ctx(high_conns, thresholds=th))
+    crit = detect_abnormal_connection_rate(ctx(crit_conns, thresholds=th))
+    assert med[0].severity == "medium"
+    assert high[0].severity == "high"
+    assert crit[0].severity == "critical"
+
+
+def test_dns_anomaly_severity_scales_with_magnitude():
+    # 6 vs threshold 5 -> medium; 30 -> critical (6x).
+    med = detect_dns_anomaly(ctx(dns=[mk_dns("10.0.0.1", f"q{i}.invalid", rcode_name="NXDOMAIN") for i in range(6)]))
+    crit = detect_dns_anomaly(ctx(dns=[mk_dns("10.0.0.1", f"q{i}.invalid", rcode_name="NXDOMAIN") for i in range(30)]))
+    assert med[0].severity == "medium"
+    assert crit[0].severity == "critical"
+
+
+def test_detection_is_deterministic():
+    conns = [mk_conn("10.0.0.1", "10.0.0.2", dport=p, first_ts=100.0 + p * 0.01) for p in range(18)]
+    dns = [mk_dns("10.0.0.1", f"q{i}.invalid", rcode_name="NXDOMAIN") for i in range(6)]
+    a = run_all_rules(ctx(connections=conns, dns=dns))
+    b = run_all_rules(ctx(connections=conns, dns=dns))
+    assert [f.to_dict() for f in a] == [f.to_dict() for f in b]
+
+
+def test_port_scan_evidence_references_real_records():
+    conns = [mk_conn("10.0.0.1", "10.0.0.2", dport=p) for p in range(12)]
+    real_ids = {c.id for c in conns}
+    findings = detect_possible_port_scan(ctx(conns))
+    assert findings
+    for ev in findings[0].evidence:
+        assert ev["type"] == "connection"
+        assert ev["id"] in real_ids
+
+
+def test_dns_anomaly_evidence_references_real_records():
+    dns = [mk_dns("10.0.0.1", f"q{i}.invalid", rcode_name="NXDOMAIN") for i in range(6)]
+    real_ids = {d.id for d in dns}
+    findings = detect_dns_anomaly(ctx(dns=dns))
+    assert findings
+    for ev in findings[0].evidence:
+        assert ev["type"] == "dns"
+        assert ev["id"] in real_ids
 
 
 def test_port_scan_configurable_threshold():
@@ -149,6 +204,20 @@ def test_dns_nxdomain_negative():
 def test_dns_nxdomain_case_insensitive():
     dns = [mk_dns("10.0.0.1", f"q{i}.invalid", rcode_name="nxdomain") for i in range(6)]
     assert detect_dns_anomaly(ctx(dns=dns))
+
+
+def test_dns_nxdomain_numeric_rcode_tshark():
+    # TShark's dns.flags.rcode is numeric (3 = NXDOMAIN). Must be recognized.
+    dns = [mk_dns("10.0.0.1", f"q{i}.invalid", rcode_name="3") for i in range(6)]
+    findings = detect_dns_anomaly(ctx(dns=dns))
+    assert len(findings) == 1
+    assert findings[0].rule_id == "dns_anomaly"
+
+
+def test_dns_numeric_noerror_not_anomaly():
+    # Numeric rcode 0 (NOERROR) must NOT be treated as NXDOMAIN.
+    dns = [mk_dns("10.0.0.1", f"q{i}.example.com", rcode_name="0") for i in range(10)]
+    assert detect_dns_anomaly(ctx(dns=dns)) == []
 
 
 def test_dns_query_diversity_positive():
@@ -267,3 +336,78 @@ def test_run_detection_missing_capture(client):
 
 def test_findings_endpoint_bad_capture(client):
     assert client.get("/api/v1/detect/findings", params={"capture_id": "nope"}).status_code == 404
+
+
+def test_findings_evidence_point_to_real_records(seeded_capture, db_session):
+    real_conn_ids = {
+        r.id
+        for r in db_session.query(Connection)
+        .filter(Connection.capture_id == seeded_capture)
+        .all()
+    }
+    detect_svc.run_detection(db_session, seeded_capture)
+    findings = detect_svc.findings_for_capture(db_session, seeded_capture)
+    port_scan = next(f for f in findings if f["rule_id"] == "port_scan")
+    assert port_scan["evidence"]
+    for ev in port_scan["evidence"]:
+        assert ev["type"] == "connection"
+        assert ev["id"] in real_conn_ids
+
+
+@pytest.fixture()
+def data_transfer_capture(db_session):
+    """A single connection with a modest byte count (below default threshold)."""
+    cap = Capture(name="detect-xfer", source="upload", status="done")
+    db_session.add(cap)
+    db_session.commit()
+    db_session.refresh(cap)
+    db_session.add(Connection(
+        capture_id=cap.id, conn_key="tcp|10.0.0.1|10.0.0.2|1|443",
+        src="10.0.0.1", dst="10.0.0.2", proto="tcp", sport=1, dport=443,
+        bytes_total=2_000_000, source="tshark",
+    ))
+    db_session.commit()
+    return cap.id
+
+
+def test_data_transfer_threshold_configurable_via_settings(data_transfer_capture, db_session):
+    from app.core.config import get_settings
+
+    s = get_settings()
+    original = s.detect_data_transfer_min_bytes
+    try:
+        # Default threshold (10MB) does NOT flag a 2MB transfer.
+        s.detect_data_transfer_min_bytes = 10_000_000
+        detect_svc.run_detection(db_session, data_transfer_capture)
+        assert not detect_svc.findings_for_capture(
+            db_session, data_transfer_capture
+        ), "2MB should not flag at the default 10MB threshold"
+
+        # A lower configured threshold SHOULD flag it.
+        s.detect_data_transfer_min_bytes = 1_000_000
+        detect_svc.run_detection(db_session, data_transfer_capture)
+        findings = detect_svc.findings_for_capture(db_session, data_transfer_capture)
+        assert any(f["rule_id"] == "high_data_transfer" for f in findings)
+    finally:
+        s.detect_data_transfer_min_bytes = original
+
+
+def test_detect_run_api_path(seeded_capture, client):
+    resp = client.post("/api/v1/detect/run", params={"capture_id": seeded_capture})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["findings"] >= 2
+    assert body["rules_evaluated"] >= 3
+    assert "by_severity" in body
+
+    # Findings endpoint returns the persisted finditings with evidence.
+    f_resp = client.get("/api/v1/detect/findings", params={"capture_id": seeded_capture})
+    assert f_resp.status_code == 200
+    findings = f_resp.json()
+    assert any(f["rule_id"] == "port_scan" for f in findings)
+
+    # Summary endpoint.
+    s_resp = client.get("/api/v1/detect/summary", params={"capture_id": seeded_capture})
+    assert s_resp.status_code == 200
+    assert s_resp.json()["total"] == body["findings"]
+

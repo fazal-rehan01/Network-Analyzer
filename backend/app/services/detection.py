@@ -13,11 +13,9 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.detection.rules import (
     ALL_RULES,
-    DetectionFinding,
     RuleContext,
     run_all_rules,
 )
-from app.models.capture import Capture
 from app.models.detection import DetectionFinding as FindingRow
 from app.models.normalized import Connection, DnsEvent, HttpEvent, Packet
 from app.schemas.detection import DetectionRunResult, DetectionSummary, RuleInfo
@@ -35,7 +33,7 @@ def _thresholds_from_settings() -> dict:
         "dns_query_diversity_min": s.detect_dns_query_diversity_min,
         "severity_high_multiplier": s.detect_severity_high_multiplier,
         "severity_critical_multiplier": s.detect_severity_critical_multiplier,
-        "data_transfer_min_bytes": 10_000_000,
+        "data_transfer_min_bytes": s.detect_data_transfer_min_bytes,
     }
 
 

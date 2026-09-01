@@ -19,6 +19,7 @@ Thresholds are configurable via environment variables / `.env` (values below are
 | `DETECT_CONN_RATE_MAX_PER_WINDOW` | 100 | Max connection starts allowed inside the window |
 | `DETECT_DNS_NXDOMAIN_MIN` | 5 | NXDOMAIN responses required before flagging DNS anomaly |
 | `DETECT_DNS_QUERY_DIVERSITY_MIN` | 50 | Unique queries from one source before flagging diversity |
+| `DETECT_DATA_TRANSFER_MIN_BYTES` | 10000000 | Total bytes on one connection before flagging a large transfer |
 | `DETECT_SEVERITY_HIGH_MULTIPLIER` | 2.0 | observed/threshold ratio that escalates to `high` |
 | `DETECT_SEVERITY_CRITICAL_MULTIPLIER` | 4.0 | observed/threshold ratio that escalates to `critical` |
 
@@ -38,6 +39,7 @@ The peak number of connection starts inside any sliding window of `conn_rate_win
 
 ### `dns_anomaly` — Possible DNS Anomaly (base: medium)
 At least `dns_nxdomain_min` NXDOMAIN responses observed. Frequent NXDOMAIN can indicate domain-generation algorithms (DGA) or DNS reconnaissance.
+NXDOMAIN is detected from either Zeek's rcode name (`NXDOMAIN`) or TShark's numeric rcode (`3`).
 - Evidence: the matching normalized `DnsEvent` records (type `dns`).
 
 ### `dns_query_diversity` — High DNS Query Diversity (base: low)
@@ -45,7 +47,7 @@ A single source resolves at least `dns_query_diversity_min` unique query names. 
 - Evidence: referenced `DnsEvent` records for that source.
 
 ### `high_data_transfer` — Large Data Transfer (base: low)
-A single connection transfers at least 10,000,000 bytes. Large egress on one flow can indicate exfiltration.
+A single connection transfers at least `data_transfer_min_bytes` (default 10,000,000 bytes, configurable via `DETECT_DATA_TRANSFER_MIN_BYTES`). Large egress on one flow can indicate exfiltration.
 - Evidence: the referenced `Connection` record.
 
 ## Endpoints (M10)

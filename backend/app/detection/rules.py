@@ -26,6 +26,7 @@ DEFAULT_THRESHOLDS: dict[str, Any] = {
     "conn_rate_max_per_window": 100,
     "dns_nxdomain_min": 5,
     "dns_query_diversity_min": 50,
+    "data_transfer_min_bytes": 10_000_000,
     "severity_high_multiplier": 2.0,
     "severity_critical_multiplier": 4.0,
 }
@@ -183,10 +184,23 @@ def detect_abnormal_connection_rate(ctx: RuleContext) -> list[DetectionFinding]:
     ]
 
 
+def _is_nxdomain(marker: Any) -> bool:
+    """True for an NXDOMAIN DNS response.
+
+    Zeek stores the human-readable rcode name (``NXDOMAIN``) while TShark's
+    ``dns.flags.rcode`` field is numeric (3 = NXDOMAIN). Accept both so the
+    rule works against normalized records from either evidence source.
+    """
+    if marker is None:
+        return False
+    s = str(marker).strip().upper()
+    return s == "NXDOMAIN" or s == "3"
+
+
 def detect_dns_anomaly(ctx: RuleContext) -> list[DetectionFinding]:
     """Abnormally many NXDOMAIN responses — possible DNS anomaly/recon."""
     min_nx = int(ctx.thresholds.get("dns_nxdomain_min", DEFAULT_THRESHOLDS["dns_nxdomain_min"]))
-    nxdomain = [d for d in ctx.dns if d.rcode_name and d.rcode_name.upper() == "NXDOMAIN"]
+    nxdomain = [d for d in ctx.dns if _is_nxdomain(d.rcode_name)]
     if len(nxdomain) < min_nx:
         return []
     ratio = len(nxdomain) / min_nx
@@ -250,7 +264,9 @@ def detect_dns_query_diversity(ctx: RuleContext) -> list[DetectionFinding]:
 def detect_high_data_transfer(ctx: RuleContext) -> list[DetectionFinding]:
     """A single connection transferring an unusually large volume of data."""
     # Threshold expressed as a diagnostic minimum (bytes); deterministic.
-    min_bytes = int(ctx.thresholds.get("data_transfer_min_bytes", 10_000_000))
+    min_bytes = int(
+        ctx.thresholds.get("data_transfer_min_bytes", DEFAULT_THRESHOLDS["data_transfer_min_bytes"])
+    )
     findings: list[DetectionFinding] = []
     for c in ctx.connections:
         total = c.bytes_total or 0

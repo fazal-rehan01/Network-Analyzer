@@ -61,6 +61,7 @@ class Settings(BaseSettings):
     detect_conn_rate_max_per_window: int = 100
     detect_dns_nxdomain_min: int = 5
     detect_dns_query_diversity_min: int = 50
+    detect_data_transfer_min_bytes: int = 10_000_000
     detect_severity_high_multiplier: float = 2.0
     detect_severity_critical_multiplier: float = 4.0
 

@@ -13,11 +13,11 @@ Development proceeds in small, independently verifiable milestones. Tracked in `
 | # | Milestone | Status |
 |---|-----------|--------|
 | 1 | Repository audit + architecture + project skeleton | ✅ Done |
-| 2 | Backend foundation + database + health checks | 🔄 In progress |
-| 3 | Frontend shell + navigation + dashboard skeleton | ⏳ |
-| 4 | Simulation engine | ⏳ |
-| 5 | Real controlled traffic generation | ⏳ |
-| 6 | TShark integration + packet capture | ⏳ |
+| 2 | Backend foundation + database + health checks | ✅ Done |
+| 3 | Frontend shell + navigation + dashboard skeleton | ✅ Done |
+| 4 | Simulation engine | ✅ Done |
+| 5 | Real controlled traffic generation | ✅ Done |
+| 6 | TShark integration + packet capture | ✅ Done |
 | 7 | PCAP upload + packet parsing | ✅ Done |
 | 8 | Zeek integration + log parsing | ✅ Done |
 | 9 | Normalization/correlation layer | ✅ Done |
