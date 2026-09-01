@@ -161,19 +161,19 @@ Thresholds are configurable (env or API).
 ## Milestone Plan
 
 1. **M1** Skeleton: repo init, structure, `.gitignore`, README, this architecture doc, `docs/*`, tooling scaffolding. ✅
-2. **M2** Backend: config, DB engine, SQLAlchemy models, health + system-status endpoints, pytest scaffold.
-3. **M3** Frontend shell: Vite+React+TS+Tailwind, layout/nav, dashboard skeleton, health call to backend.
-4. **M4** Simulation engine: abstract `Scenario` base + registry + runner + API + DB records.
-5. **M5** Real traffic: implement normal/http/dns/icmp/port_scan/burst/data_transfer/anomalies with Scapy+sockets.
-6. **M6** TShark: live capture manager (interfaces, start/stop/save, filter, timeout, cleanup).
-7. **M7** PCAP upload + TShark packet parser → normalized packets.
+2. **M2** Backend: config, DB engine, SQLAlchemy models, health + system-status endpoints, pytest scaffold. ✅
+3. **M3** Frontend shell: Vite+React+TS+Tailwind, layout/nav, dashboard skeleton, health call to backend. ✅
+4. **M4** Simulation engine: abstract `Scenario` base + registry + runner + API + DB records. ✅
+5. **M5** Real traffic: implement normal/http/dns/icmp/port_scan/burst/data_transfer/anomalies with Scapy+sockets. ✅
+6. **M6** TShark: live capture manager (interfaces, start/stop/save, filter, timeout, cleanup). ✅
+7. **M7** PCAP upload + TShark packet parser → normalized packets. ✅
 8. **M8** Zeek integration + defensive log parsers. ✅
 9. **M9** Normalization/correlation (packets→connections, TShark↔Zeek). ✅
 10. **M10** Detection engine + rules + tests. ✅
-11. **M11** Alerts/incidents endpoints + UI.
-12. **M12** Dashboard analytics + charts (real data).
-13. **M13** Compare page.
-14. **M14** Reporting (PDF).
-15. **M15** E2E integration testing.
-16. **M16** UI polish, error/empty/loading states, performance.
-17. **M17** Final docs + validation.
+11. **M11** Alerts/incidents endpoints + UI. ⏳
+12. **M12** Dashboard analytics + charts (real data). ⏳
+13. **M13** Compare page. ⏳
+14. **M14** Reporting (PDF). ⏳
+15. **M15** E2E integration testing. ⏳
+16. **M16** UI polish, error/empty/loading states, performance. ⏳
+17. **M17** Final docs + validation. ⏳
