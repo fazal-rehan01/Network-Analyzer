@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from app.api.v1 import (
     analytics,
     captures,
+    compare,
     detect,
     incidents,
     normalize,
@@ -23,3 +24,4 @@ api_router.include_router(normalize.router)
 api_router.include_router(detect.router)
 api_router.include_router(incidents.router)
 api_router.include_router(analytics.router)
+api_router.include_router(compare.router)

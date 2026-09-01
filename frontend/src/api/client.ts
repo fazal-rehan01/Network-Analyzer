@@ -25,6 +25,9 @@ import type {
   IncidentNoteRead,
   IncidentSummary,
   DashboardAnalytics,
+  CompareStatus,
+  CaptureComparison,
+  ConnectionComparison,
 } from "./types";
 
 const BASE = "/api/v1";
@@ -134,4 +137,9 @@ export const api = {
     if (captureId) qs.set("capture_id", captureId);
     return request<DashboardAnalytics>(`/analytics/dashboard?${qs.toString()}`);
   },
+
+  compareStatus: () => request<CompareStatus>("/compare/status"),
+  compareCapture: (captureId: string) => request<CaptureComparison>(`/compare/capture/${encodeURIComponent(captureId)}`),
+  compareConnection: (connectionId: string) =>
+    request<ConnectionComparison>(`/compare/connection/${encodeURIComponent(connectionId)}`),
 };

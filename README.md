@@ -24,7 +24,8 @@ Development proceeds in small, independently verifiable milestones. Tracked in `
 | 10 | Detection engine + rules | ✅ Done |
 | 11 | Alerts/incidents | ✅ Done |
 | 12 | Dashboard analytics + charts | ✅ Done |
-| 13 | Comparison page | ⏳ |
+| 13 | Comparison page | ✅ Done |
+| 14 | Reporting | ⏳ |
 | 12 | Dashboard analytics + charts | ⏳ |
 | 13 | Wireshark vs Zeek comparison | ⏳ |
 | 14 | Reporting | ⏳ |
@@ -52,7 +53,7 @@ The whole system is modular: the frontend talks only to the FastAPI API and neve
 8. **Normalization / correlation** — merges TShark packets with Zeek events into shared normalized Connection/DNS/HTTP records, correlated by canonical 5-tuple, Zeek UID, and time proximity; every row is traceable to its evidence source.
 9. **Threat/anomaly detection** — explainable rule-based detection (port scan, abnormal connection rate, DNS anomaly) over normalized data with configurable thresholds and severity, evidence references back to normalized records (no fake AI).
 10. **Alerts/incidents** — SOC incident workflow built on M10 detection findings: severity, status lifecycle (New → Investigating → Contained → Resolved, or → False Positive), analyst notes, evidence, audit history, filtering/search, and dashboard counters.
-11. **Wireshark vs Zeek comparison** — same traffic from two perspectives, correlated evidence per connection.
+11. **Wireshark vs Zeek comparison** — dedicated comparison page showing the same traffic from packet-level (Wireshark/TShark: frames, timestamps, ports, lengths) and event-level (Zeek: conn.log flows, service, duration, bytes, DNS/HTTP/SSL/notices) perspectives, with per-connection correlation status (both / TShark only / Zeek only) reported honestly.
 12. **Reporting** — exportable PDF report covering capture, simulation, traffic summary, detection, both analyses, comparison, recommendations.
 
 ---

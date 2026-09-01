@@ -419,3 +419,117 @@ export interface DashboardAnalytics {
     created_at: string | null;
   }[];
 }
+
+export interface CompareStatus {
+  tshark_available: boolean;
+  zeek_available: boolean;
+}
+
+export interface TsharkSide {
+  present: boolean;
+  description: string;
+  src: string | null;
+  dst: string | null;
+  proto: string | null;
+  sport: number | null;
+  dport: number | null;
+  packet_count: number;
+  bytes: number;
+  first_ts: number | null;
+  last_ts: number | null;
+  packets: {
+    id: string;
+    frame_number: number | null;
+    ts: number | null;
+    src: string | null;
+    dst: string | null;
+    proto: string | null;
+    sport: number | null;
+    dport: number | null;
+    length: number | null;
+    tcp_flags: string | null;
+    http_method: string | null;
+    http_host: string | null;
+    http_uri: string | null;
+    dns_qname: string | null;
+    dns_rcode: string | null;
+  }[];
+}
+
+export interface ZeekConnSide {
+  present: boolean;
+  uid: string | null;
+  service: string | null;
+  conn_state: string | null;
+  duration: number | null;
+  orig_bytes: number | null;
+  resp_bytes: number | null;
+  src: string | null;
+  dst: string | null;
+  proto: string | null;
+  sport: number | null;
+  dport: number | null;
+}
+
+export interface ZeekSide {
+  present: boolean;
+  description: string;
+  uid: string | null;
+  conn: ZeekConnSide | null;
+  dns: Record<string, unknown>[];
+  http: Record<string, unknown>[];
+  ssl: Record<string, unknown>[];
+  notices: Record<string, unknown>[];
+  event_count: number;
+}
+
+export interface ConnectionComparison {
+  id: string;
+  src: string | null;
+  dst: string | null;
+  proto: string | null;
+  sport: number | null;
+  dport: number | null;
+  service: string | null;
+  packets: number;
+  bytes_total: number;
+  zeek_uid: string | null;
+  source: string;
+  correlation_status: string;
+  correlation_summary: string;
+  tshark: TsharkSide;
+  zeek: ZeekSide;
+  evidence: { tshark: string[]; zeek: string[] };
+}
+
+export interface CaptureComparisonSummary {
+  connections_total: number;
+  both: number;
+  tshark_only: number;
+  zeek_only: number;
+  packets_tshark: number;
+  zeek_events: number;
+}
+
+export interface CaptureComparison {
+  capture_id: string;
+  capture_name: string | null;
+  tshark_available: boolean;
+  zeek_available: boolean;
+  summary: CaptureComparisonSummary;
+  connections: {
+    id: string;
+    src: string | null;
+    dst: string | null;
+    proto: string | null;
+    sport: number | null;
+    dport: number | null;
+    service: string | null;
+    packets: number;
+    bytes_total: number;
+    zeek_uid: string | null;
+    source: string;
+    correlation_status: string;
+    correlation_summary: string;
+  }[];
+}

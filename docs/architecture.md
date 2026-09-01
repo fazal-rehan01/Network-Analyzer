@@ -134,7 +134,7 @@ Dashboard / Packets / Zeek / Compare / Alerts read from DB
 2. **Simulation** — scenario cards with start/stop, status, live stats.
 3. **Packets** — table with filter/search/detail drawer.
 4. **Zeek** — event/connection logs with defensive rendering.
-5. **Compare** — Wireshark(TShark) vs Zeek correlation view.
+5. **Compare** — dedicated Wireshark/TShark (packet-level) vs Zeek (event-level) comparison: capture selector, per-connection correlation status (both / TShark only / Zeek only), side-by-side evidence tables, honest tool-unavailable states.
 6. **Incidents** — SOC queue + detail (status/severity workflow, evidence, notes, history).
 7. **Reports** — generate/download.
 8. **System** — tool availability + capture interface selection.
@@ -221,8 +221,33 @@ traces to persisted captures/packets/connections/dns/http/detections/incidents.
 - `backend/app/schemas/analytics.py` — typed payload schemas.
 - `frontend/src/pages/Dashboard.tsx` — KPI cards + recharts visualizations.
 
----
+## Wireshark/TShark vs Zeek Comparison (`backend/app/compare`)
 
+The comparison page answers: "for the same traffic, what does packet-level
+analysis show vs what does event-level analysis show?" It is honest by design:
+
+- The **TShark side** renders only real packet evidence (frame number, ts,
+  src/dst, protocol, ports, length, TCP flags) matched to a normalized
+  connection by its 5-tuple.
+- The **Zeek side** renders only real conn.log (service, conn state, duration,
+  orig/resp bytes), DNS, HTTP, SSL and notice events correlated to that
+  connection via ``zeek_uid`` / ``connection_id`` / address pair.
+- Per-connection **correlation status** is one of `both`, `tshark_only`,
+  `zeek_only` — never a fabricated pairing. When Zeek is not installed the
+  TShark side still works and the Zeek side is shown as absent.
+
+### Endpoints
+- `GET /compare/status` — tshark/zeek availability.
+- `GET /compare/capture/{capture_id}` — summary + per-connection correlation rows.
+- `GET /compare/connection/{connection_id}` — full side-by-side evidence.
+
+### Key files
+- `backend/app/services/compare.py` — correlation status + evidence snapshots.
+- `backend/app/api/v1/compare.py` — endpoints.
+- `backend/app/schemas/compare.py` — payload schemas.
+- `frontend/src/pages/ComparePage.tsx` — comparison UI.
+
+---
 
 ## Milestone Plan
 
@@ -238,7 +263,7 @@ traces to persisted captures/packets/connections/dns/http/detections/incidents.
 10. **M10** Detection engine + rules + tests. ✅
 11. **M11** Alerts/incidents endpoints + UI. ✅
 12. **M12** Dashboard analytics + charts (real data). ✅
-13. **M13** Compare page. ⏳
+13. **M13** Compare page. ✅
 14. **M14** Reporting (PDF). ⏳
 15. **M15** E2E integration testing. ⏳
 16. **M16** UI polish, error/empty/loading states, performance. ⏳

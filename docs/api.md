@@ -196,3 +196,41 @@ Response shape:
 ```
 All values are derived from persisted records; nothing is fabricated. Traffic
 over time is downsampled to <= 120 points. _(Added in M12)_
+
+## Comparison (M13)
+
+### `GET /compare/status`
+Tool availability: `{ "tshark_available": bool, "zeek_available": bool }`.
+
+### `GET /compare/capture/{capture_id}`
+Capture-level comparison summary + per-connection correlation. 404 if the
+capture is unknown. Response:
+```json
+{
+  "capture_id": "...",
+  "capture_name": "...",
+  "tshark_available": true,
+  "zeek_available": false,
+  "summary": { "connections_total", "both", "tshark_only", "zeek_only",
+               "packets_tshark", "zeek_events" },
+  "connections": [ { "id", "src", "dst", "proto", "sport", "dport",
+                     "service", "packets", "bytes_total", "zeek_uid",
+                     "source", "correlation_status", "correlation_summary" } ]
+}
+```
+`correlation_status` is `both`, `tshark_only`, or `zeek_only` — reported
+honestly per connection, never fabricated.
+
+### `GET /compare/connection/{connection_id}`
+Full side-by-side evidence for one connection (404 if unknown):
+- `tshark` — packet-level side: `{ present, packet_count, bytes, first_ts,
+  last_ts, packets: [ { frame_number, ts, src, dst, proto, sport, dport,
+  length, tcp_flags, http_*, dns_* } ] }`.
+- `zeek` — event-level side: `{ present, uid, conn: { service, conn_state,
+  duration, orig_bytes, resp_bytes, src, dst, proto, sport, dport },
+  dns: [...], http: [...], ssl: [...], notices: [...], event_count }`.
+- `evidence` — `{ tshark: [ids], zeek: [ids] }` source references.
+- `correlation_status` / `correlation_summary`.
+
+Each side contains only the evidence that actually exists; absent sides are
+explicit (`present: false`). _(Added in M13)_
