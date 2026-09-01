@@ -59,3 +59,31 @@ Query normalized Zeek events persisted for a capture. Optional `log_type` filter
 unknown values return 400.
 
 _(Added in M8)_
+
+## Normalize / Correlation
+
+### `GET /normalize/status`
+Reports whether the underlying evidence tools are available:
+`{ "tshark_available": bool, "zeek_available": bool }`.
+
+### `POST /normalize/run?capture_id={id}`
+Run the full normalization + correlation pipeline for a capture: parse TShark packets → aggregate into
+connections, match Zeek conn rows by canonical 5-tuple, and promote Zeek DNS/HTTP (by UID) and TShark packet
+HTTP/DNS hints into shared normalized events. Idempotent (re-runs clear prior normalized rows for the capture).
+Returns `{ capture_id, tshark_available, zeek_available, packets_parsed, packets_persisted, connections,
+dns_events, http_events, connections_with_zeek, error }`. Degrades gracefully when a tool is absent.
+
+### `GET /normalize/connections?capture_id={id}&limit={n}`
+Return normalized 5-tuple connections for a capture, each tagged with its evidence `source` (`tshark`, `zeek`,
+or `tshark+zeek`) and an optional correlated `zeek_uid`.
+
+### `GET /normalize/dns?capture_id={id}&limit={n}`
+Return normalized DNS events, each tagged with `source` and either a `zeek_uid` or a `packet_ref` for traceability.
+
+### `GET /normalize/http?capture_id={id}&limit={n}`
+Return normalized HTTP events, each tagged with `source` and either a `zeek_uid` or a `packet_ref`.
+
+### `GET /normalize/packets?capture_id={id}&limit={n}`
+Return normalized per-packet metadata (TShark evidence) for a capture.
+
+_(Added in M9)_

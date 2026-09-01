@@ -6,6 +6,7 @@ const NAV = [
   { to: "/capture", label: "Capture", icon: "M21 12.79A9 9 0 1111.21 3 7 7 0 002 12v9a7 7 0 007 7h1c1.66 0 3.16-.66 4.24-1.72l1.62 1.62a.5.5 0 00.72-.7l-1.63-1.62A8.98 8.98 0 0021 12.8z" },
   { to: "/packets", label: "Packets", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" },
   { to: "/zeek", label: "Zeek", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
+  { to: "/correlated", label: "Correlated", icon: "M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" },
   { to: "/compare", label: "Compare", icon: "M11 4H4v11h7V4zM20 9h-7v6h7V9zM11 17H4v3h7v-3zM20 17h-7v3h7v-3z" },
   { to: "/alerts", label: "Alerts", icon: "M12 3v2m0 14v2m-7-9H3m18 0h-2M6 6l1.5 1.5M18 6l-1.5 1.5M6 12a6 6 0 1012 0 6 6 0 00-12 0z" },
   { to: "/reports", label: "Reports", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.6a2 2 0 011.4.6l4.4 4.4a2 2 0 01.6 1.4V19a2 2 0 01-2 2z" },

@@ -7,6 +7,12 @@ import type {
   CaptureStats,
   ZeekProcessResult,
   ZeekEvent,
+  NormalizeStatus,
+  NormalizeSummary,
+  ConnectionRead,
+  DnsEventRead,
+  HttpEventRead,
+  PacketRead,
 } from "./types";
 
 const BASE = "/api/v1";
@@ -53,5 +59,25 @@ export const api = {
     const params = new URLSearchParams({ capture_id: captureId, limit: String(limit) });
     if (logType) params.set("log_type", logType);
     return request<ZeekEvent[]>(`/zeek/events?${params.toString()}`);
+  },
+
+  normalizeStatus: () => request<NormalizeStatus>("/normalize/status"),
+  normalizeRun: (captureId: string) =>
+    request<NormalizeSummary>(`/normalize/run?capture_id=${encodeURIComponent(captureId)}`, { method: "POST" }),
+  normalizeConnections: (captureId: string, limit = 500) => {
+    const params = new URLSearchParams({ capture_id: captureId, limit: String(limit) });
+    return request<ConnectionRead[]>(`/normalize/connections?${params.toString()}`);
+  },
+  normalizeDns: (captureId: string, limit = 500) => {
+    const params = new URLSearchParams({ capture_id: captureId, limit: String(limit) });
+    return request<DnsEventRead[]>(`/normalize/dns?${params.toString()}`);
+  },
+  normalizeHttp: (captureId: string, limit = 500) => {
+    const params = new URLSearchParams({ capture_id: captureId, limit: String(limit) });
+    return request<HttpEventRead[]>(`/normalize/http?${params.toString()}`);
+  },
+  normalizePackets: (captureId: string, limit = 500) => {
+    const params = new URLSearchParams({ capture_id: captureId, limit: String(limit) });
+    return request<PacketRead[]>(`/normalize/packets?${params.toString()}`);
   },
 };

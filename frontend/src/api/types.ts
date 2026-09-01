@@ -92,3 +92,108 @@ export interface ZeekEvent {
   fields: Record<string, unknown>;
   created_at: string;
 }
+
+export interface NormalizeStatus {
+  tshark_available: boolean;
+  zeek_available: boolean;
+}
+
+export interface NormalizeSummary {
+  capture_id: string | null;
+  tshark_available: boolean;
+  zeek_available: boolean;
+  packets_parsed: number;
+  packets_persisted: number;
+  connections: number;
+  dns_events: number;
+  http_events: number;
+  connections_with_zeek: number;
+  error: string | null;
+}
+
+export interface ConnectionRead {
+  id: string;
+  capture_id: string | null;
+  conn_key: string;
+  src: string | null;
+  dst: string | null;
+  proto: string | null;
+  sport: number | null;
+  dport: number | null;
+  service: string | null;
+  zeek_uid: string | null;
+  conn_state: string | null;
+  packets: number;
+  bytes_total: number;
+  orig_bytes: number | null;
+  resp_bytes: number | null;
+  duration: number | null;
+  first_ts: number | null;
+  last_ts: number | null;
+  source: string;
+  created_at: string;
+}
+
+export interface DnsEventRead {
+  id: string;
+  capture_id: string | null;
+  connection_id: string | null;
+  ts: number | null;
+  src: string | null;
+  dst: string | null;
+  query: string | null;
+  qtype_name: string | null;
+  rcode_name: string | null;
+  answers: string | null;
+  proto: string | null;
+  trans_id: number | null;
+  source: string;
+  zeek_uid: string | null;
+  packet_ref: string | null;
+  raw: string | null;
+  created_at: string;
+}
+
+export interface HttpEventRead {
+  id: string;
+  capture_id: string | null;
+  connection_id: string | null;
+  ts: number | null;
+  src: string | null;
+  dst: string | null;
+  method: string | null;
+  host: string | null;
+  uri: string | null;
+  user_agent: string | null;
+  status_code: number | null;
+  resp_len: number | null;
+  referrer: string | null;
+  source: string;
+  zeek_uid: string | null;
+  packet_ref: string | null;
+  raw: string | null;
+  created_at: string;
+}
+
+export interface PacketRead {
+  id: string;
+  capture_id: string | null;
+  frame_number: number | null;
+  ts: number | null;
+  src: string | null;
+  dst: string | null;
+  proto: string | null;
+  sport: number | null;
+  dport: number | null;
+  length: number | null;
+  tcp_flags: string | null;
+  http_method: string | null;
+  http_host: string | null;
+  http_uri: string | null;
+  http_status: number | null;
+  dns_qname: string | null;
+  dns_qtype: string | null;
+  dns_rcode: string | null;
+  source: string;
+  created_at: string;
+}

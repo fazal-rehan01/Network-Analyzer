@@ -168,7 +168,7 @@ Thresholds are configurable (env or API).
 6. **M6** TShark: live capture manager (interfaces, start/stop/save, filter, timeout, cleanup).
 7. **M7** PCAP upload + TShark packet parser → normalized packets.
 8. **M8** Zeek integration + defensive log parsers. ✅
-9. **M9** Normalization/correlation (packets→connections, TShark↔Zeek).
+9. **M9** Normalization/correlation (packets→connections, TShark↔Zeek). ✅
 10. **M10** Detection engine + rules + tests.
 11. **M11** Alerts/incidents endpoints + UI.
 12. **M12** Dashboard analytics + charts (real data).
