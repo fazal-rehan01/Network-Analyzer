@@ -26,13 +26,7 @@ Development proceeds in small, independently verifiable milestones. Tracked in `
 | 12 | Dashboard analytics + charts | ✅ Done |
 | 13 | Comparison page | ✅ Done |
 | 14 | Reporting | ✅ Done |
-| 15 | E2E workflow tests | ⏳ |
-| 16 | Polishing | ⏳ |
-| 17 | Final docs + validation | ⏳ |
-| 12 | Dashboard analytics + charts | ⏳ |
-| 13 | Wireshark vs Zeek comparison | ⏳ |
-| 14 | Reporting | ⏳ |
-| 15 | End-to-end integration testing | ⏳ |
+| 15 | E2E workflow tests | ✅ Done |
 | 16 | UI polish + error handling + performance | ⏳ |
 | 17 | Final documentation + validation | ⏳ |
 

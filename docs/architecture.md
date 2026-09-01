@@ -277,6 +277,24 @@ every number traces to the database.
 - `backend/app/schemas/report.py` — schemas.
 - `frontend/src/pages/ReportsPage.tsx` — scope picker + download.
 
+## Testing & validation philosophy
+
+Every milestone ships real, honest tests; no test asserts a fabricated value:
+
+- **Unit + API tests** per module (schemas, services, endpoints) using the
+  session-scoped shared SQLite test DB — assertions are always scoped to a
+  capture/row so tests never depend on global counts.
+- **Real-tool integration** (`test_detection_integration.py`) builds a genuine
+  PCAP and parses it with the installed TShark through the M9 normalize
+  pipeline; skips cleanly when TShark is absent.
+- **End-to-end workflow** (`test_e2e_workflow.py`, M15) drives one real PCAP
+  through the whole public API: capture → normalize/correlate → detect →
+  incident → analytics → compare → report PDF, asserting honest invariants at
+  each stage.
+- **Zeek fixtures** (`tests/fixtures/zeek_*.log`) are real-format Zeek TSV
+  output so Zeek-dependent behaviour is tested even on machines without Zeek
+  installed. TShark is required for real-PCAP tests; Zeek never is.
+
 ---
 
 ## Milestone Plan
@@ -295,6 +313,6 @@ every number traces to the database.
 12. **M12** Dashboard analytics + charts (real data). ✅
 13. **M13** Compare page. ✅
 14. **M14** Reporting (PDF). ✅
-15. **M15** E2E integration testing. ⏳
+15. **M15** E2E integration testing. ✅
 16. **M16** UI polish, error/empty/loading states, performance. ⏳
 17. **M17** Final docs + validation. ⏳
