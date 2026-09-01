@@ -23,3 +23,11 @@ def client():
 
     with TestClient(app) as c:
         yield c
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _ensure_tables():
+    """Create all tables in the test DB for tests that use sessions directly."""
+    from app.core.database import init_db
+
+    init_db()

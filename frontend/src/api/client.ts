@@ -1,4 +1,13 @@
-import type { HealthResponse, SystemStatusResponse, InterfaceInfo, CaptureRead, CaptureCreate, CaptureStats } from "./types";
+import type {
+  HealthResponse,
+  SystemStatusResponse,
+  InterfaceInfo,
+  CaptureRead,
+  CaptureCreate,
+  CaptureStats,
+  ZeekProcessResult,
+  ZeekEvent,
+} from "./types";
 
 const BASE = "/api/v1";
 
@@ -35,5 +44,14 @@ export const api = {
     const form = new FormData();
     form.append("file", file);
     return request<CaptureRead>("/captures/upload", { method: "POST", body: form, headers: {} });
+  },
+
+  zeekStatus: () => request<{ available: boolean; zeek_dir: string }>("/zeek/status"),
+  zeekProcess: (captureId: string) =>
+    request<ZeekProcessResult>(`/zeek/process?capture_id=${encodeURIComponent(captureId)}`, { method: "POST" }),
+  zeekEvents: (captureId: string, logType?: string, limit = 500) => {
+    const params = new URLSearchParams({ capture_id: captureId, limit: String(limit) });
+    if (logType) params.set("log_type", logType);
+    return request<ZeekEvent[]>(`/zeek/events?${params.toString()}`);
   },
 };

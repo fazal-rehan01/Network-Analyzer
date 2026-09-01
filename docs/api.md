@@ -43,3 +43,19 @@ Start the run in a background thread.
 Request cooperative stop.
 
 _(Added in M4)_
+
+## Zeek
+
+### `GET /zeek/status`
+Reports whether the Zeek binary is installed (`available`) and where Zeek output is stored (`zeek_dir`).
+
+### `POST /zeek/process?capture_id={id}`
+Run Zeek over a capture's saved PCAP, parse conn/dns/http/ssl/notice logs, and persist normalized event rows.
+Returns `{ available, summary, logs, error, capture_id }`. Gracefully degrades when Zeek is absent (returns
+`available: false` and a descriptive `error`, leaving everything else functional).
+
+### `GET /zeek/events?capture_id={id}&log_type={conn|dns|http|ssl|notice}&limit={n}`
+Query normalized Zeek events persisted for a capture. Optional `log_type` filter; `log_type` is optional and
+unknown values return 400.
+
+_(Added in M8)_

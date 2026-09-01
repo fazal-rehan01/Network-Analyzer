@@ -256,7 +256,9 @@ export function CapturePage() {
   );
 }
 
-function UploadZone({ onUpload, uploading }: { onUpload: (file: File) => void; uploading: boolean }) {
+type UploadHandler = (file: File) => void;
+
+function UploadZone({ onUpload, uploading }: { onUpload: UploadHandler; uploading: boolean }) {
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 

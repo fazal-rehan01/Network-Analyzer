@@ -18,8 +18,8 @@ Development proceeds in small, independently verifiable milestones. Tracked in `
 | 4 | Simulation engine | ⏳ |
 | 5 | Real controlled traffic generation | ⏳ |
 | 6 | TShark integration + packet capture | ⏳ |
-| 7 | PCAP upload + packet parsing | ⏳ |
-| 8 | Zeek integration + log parsing | ⏳ |
+| 7 | PCAP upload + packet parsing | ✅ Done |
+| 8 | Zeek integration + log parsing | ✅ Done |
 | 9 | Normalization/correlation layer | ⏳ |
 | 10 | Detection engine + rules | ⏳ |
 | 11 | Alerts/incidents | ⏳ |

@@ -64,3 +64,31 @@ export interface CaptureCreate {
   filter_expr?: string;
   duration_sec?: number;
 }
+
+export interface ZeekLogSummary {
+  log_type: string;
+  filename: string;
+  path: string;
+  present: boolean;
+  rows: number;
+}
+
+export interface ZeekProcessResult {
+  available: boolean;
+  summary: ZeekLogSummary[];
+  logs: Record<string, Array<Record<string, unknown>>>;
+  error: string | null;
+  capture_id: string | null;
+}
+
+export interface ZeekEvent {
+  id: string;
+  log_type: string;
+  capture_id: string | null;
+  ts: number | null;
+  uid: string | null;
+  src: string | null;
+  dst: string | null;
+  fields: Record<string, unknown>;
+  created_at: string;
+}

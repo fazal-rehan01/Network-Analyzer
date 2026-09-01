@@ -1,0 +1,9 @@
+#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	notice
+#open	2024-01-01-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	fuid	file_mime_type	file_desc	proto	note	msg	sub	src	dst	p	n	peer_descr	actions	suppress_for	remote_location.country_code	remote_location.region	remote_location.city	remote_location.latitude	remote_location.longitude
+#types	time	string	addr	port	addr	port	string	string	string	enum	enum	string	string	string	addr	port	count	string	vector[enum]	interval	string	string	string	double	double
+1609459200.500000	C3	192.168.1.20	54321	8.8.8.8	53	-	-	-	udp	DNS::NXDOMAIN	DNS NXDOMAIN for nonexistent.invalid	-	192.168.1.20	8.8.8.8	53	1	-	Notice::ACTION_LOG	-	-	-	-	-	-

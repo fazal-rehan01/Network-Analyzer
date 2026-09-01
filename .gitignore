@@ -24,6 +24,10 @@ env/
 .coverage
 htmlcov/
 *.log
+# Keep test fixture log files (Zeek TSV fixtures used by the test suite)
+!backend/tests/fixtures/
+backend/tests/fixtures/*
+!backend/tests/fixtures/zeek_*.log
 pip-wheel-metadata/
 
 # ---- Node / frontend ----
