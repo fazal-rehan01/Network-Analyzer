@@ -5,6 +5,7 @@ import ipaddress
 import threading
 import time
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import SessionLocal
@@ -208,6 +209,60 @@ class SimulationRunner:
 
 _runner_lock = threading.Lock()
 _active: dict[str, SimulationRunner] = {}
+
+
+def reconcile_stale_simulations() -> int:
+    """
+    Reconcile stale simulation records on application startup.
+    
+    Finds simulations with status 'running' or 'stopping' that have no active runner
+    (indicating the process died or was restarted while they were running).
+    Marks them as 'failed' with a clear error message, preserving all historical data.
+    
+    Returns the number of simulations reconciled.
+    """
+    from app.core.database import SessionLocal
+    from app.models.simulation import Simulation
+    from app.utils.timeutil import utcnow
+    
+    with _runner_lock:
+        active_ids = set(_active.keys())
+    
+    db = SessionLocal()
+    try:
+        # Find simulations that appear to be running/stopping but have no active runner
+        stale_sims = db.execute(
+            select(Simulation).where(
+                Simulation.status.in_(("running", "stopping"))
+            )
+        ).scalars().all()
+        
+        reconciled = 0
+        for sim in stale_sims:
+            if sim.id in active_ids:
+                # Has an active runner - skip (legitimately running/stopping)
+                continue
+            
+            # This is a stale record - reconcile it
+            if sim.end_time is None:
+                sim.end_time = utcnow()
+            if sim.start_time and sim.duration_sec is None:
+                sim.duration_sec = (sim.end_time - sim.start_time).total_seconds()
+            
+            # Preserve existing stats/packets/bytes/connections
+            # Mark as failed with clear recovery message
+            sim.status = "failed"
+            sim.result = "Recovered stale stopping/running state after application restart"
+            sim.error = "Simulation worker process was not found on startup; likely the application was restarted while this simulation was running/stopping. Historical packet/byte/connection data has been preserved."
+            
+            reconciled += 1
+        
+        if reconciled > 0:
+            db.commit()
+        
+        return reconciled
+    finally:
+        db.close()
 
 
 def start_simulation(db: Session, simulation_id: str) -> SimulationRunner:

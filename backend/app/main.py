@@ -16,6 +16,11 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     settings.ensure_dirs()
     init_db()
+    # Reconcile stale simulation states from previous runs
+    from app.simulation.runner import reconcile_stale_simulations
+    count = reconcile_stale_simulations()
+    if count > 0:
+        print(f"Reconciled {count} stale simulation(s) on startup")
     yield
 
 
