@@ -107,8 +107,12 @@ def stop_simulation_run(simulation_id: str, db: Session = Depends(get_db)) -> Si
     sim = db.get(Simulation, simulation_id)
     if sim is None:
         raise HTTPException(status_code=404, detail="Simulation not found")
-    stop_simulation(simulation_id)
+    if sim.status != "running":
+        # Idempotent: if already stopped/completed/failed, return current state
+        return _to_read(sim)
+    # Set stopping status FIRST, then signal the worker
     sim.status = "stopping"
     db.commit()
+    stop_simulation(simulation_id)
     db.refresh(sim)
     return _to_read(sim)

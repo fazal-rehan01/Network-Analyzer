@@ -32,12 +32,17 @@ def is_safe_target(target: str) -> bool:
 class SimulationRunner:
     """Runs one simulation scenario in a background thread with lifecycle tracking."""
 
+    # Graceful shutdown timeout in seconds
+    GRACEFUL_SHUTDOWN_TIMEOUT = 10.0
+
     def __init__(self, simulation_id: str) -> None:
         self.simulation_id = simulation_id
         self._thread: threading.Thread | None = None
         self._ctx: ScenarioContext | None = None
         self._flush_thread: threading.Thread | None = None
         self._flush_stop_event = threading.Event()
+        self._stop_requested = threading.Event()
+        self._finished = threading.Event()
 
     @property
     def running(self) -> bool:
@@ -49,9 +54,20 @@ class SimulationRunner:
         self._thread = threading.Thread(target=self._worker, daemon=True, name=f"sim-{self.simulation_id}")
         self._thread.start()
 
-    def stop(self) -> None:
+    def stop(self) -> bool:
+        """Request graceful stop. Returns True if stop was requested, False if already stopped/finished."""
+        if self._stop_requested.is_set():
+            return True  # Idempotent: already stopping/stopped
+        if not self.running and self._finished.is_set():
+            return False  # Already finished, nothing to stop
+        self._stop_requested.set()
         if self._ctx:
             self._ctx.request_stop()
+        return True
+
+    def wait_for_stop(self, timeout: float | None = None) -> bool:
+        """Wait for the simulation to finish stopping. Returns True if stopped, False if timeout."""
+        return self._finished.wait(timeout=timeout)
 
     def _mark(self, sim: Simulation, status: str) -> None:
         sim.status = status
@@ -154,7 +170,22 @@ class SimulationRunner:
         except SimulationCancelled:
             db.rollback()
             sim = db.get(Simulation, self.simulation_id)
-            if sim:
+            if sim and self._ctx:
+                elapsed = time.monotonic() - started
+                sim.packets_sent = self._ctx.packets_sent
+                sim.bytes_sent = self._ctx.bytes_sent
+                sim.connections = self._ctx.connections
+                if elapsed > 0:
+                    sim.rates_per_sec = int(self._ctx.packets_sent / elapsed)
+                sim.set_stats(
+                    {
+                        "elapsed_sec": round(elapsed, 3),
+                        "packets_sent": self._ctx.packets_sent,
+                        "bytes_sent": self._ctx.bytes_sent,
+                        "connections": self._ctx.connections,
+                        "rates_per_sec": sim.rates_per_sec,
+                    }
+                )
                 sim.result = "Stopped by user"
                 self._mark(sim, "stopped")
                 db.commit()
@@ -168,6 +199,10 @@ class SimulationRunner:
                 db.commit()
         finally:
             self._ctx = None
+            self._finished.set()
+            # Remove runner from active registry
+            with _runner_lock:
+                _active.pop(self.simulation_id, None)
             db.close()
 
 
@@ -187,6 +222,16 @@ def stop_simulation(simulation_id: str) -> bool:
     with _runner_lock:
         runner = _active.get(simulation_id)
     if runner is None:
+        # Check if simulation exists and is in a terminal state
+        db = SessionLocal()
+        try:
+            sim = db.get(Simulation, simulation_id)
+            if sim and sim.status in ("completed", "stopped", "failed"):
+                return False  # Already in terminal state
+        finally:
+            db.close()
         return False
     runner.stop()
+    # Wait for graceful shutdown with timeout
+    runner.wait_for_stop(timeout=SimulationRunner.GRACEFUL_SHUTDOWN_TIMEOUT)
     return True
