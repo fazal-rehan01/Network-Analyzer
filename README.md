@@ -19,7 +19,11 @@ The complete end-to-end demonstration in the exact order:
 7. **Select the Npcap Loopback Adapter** on Windows (or loopback on Linux)
 8. **Start a live capture** — click "Start Capture"
 9. **Return to Simulation** — keep the capture running
+<<<<<<< HEAD
 10. **Run `Port Scan Simulation`** — click "Run scenario" on the Port Scan card
+=======
+10. 10. **Run `Port Scan Simulation`** — click "Run scenario" on the Port Scan card
+>>>>>>> 7df1a56f5e9a4de23b29b8f3ed3e7605c575733a
 11. **Let the simulation finish** — watch the status go `queued` → `running` → `completed`
 12. **Return to Capture and verify** — stop the capture; the PCAP row appears with packet count > 0
 13. **Open Correlated** — Navigate to the Correlated page
@@ -220,4 +224,8 @@ Development proceeds in small, independently verifiable milestones. Tracked in `
 | 14 | Reporting | ✅ Done |
 | 15 | E2E workflow tests | ✅ Done |
 | 16 | UI polish + error handling + performance | ✅ Done |
+<<<<<<< HEAD
 | 17 | Final documentation + validation | ✅ Done |
+=======
+| 17 | Final documentation + validation | ✅ Done |
+>>>>>>> 7df1a56f5e9a4de23b29b8f3ed3e7605c575733a
